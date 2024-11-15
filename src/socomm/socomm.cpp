@@ -29,32 +29,6 @@ inline void handle_errno(int status)
   }
 }
 
-static void client_thread()
-{
-  int   status;
-
-  void *ctx = zmq_ctx_new();
-  sleep(10);
-
-  void *client_socket = zmq_socket(ctx, ZMQ_REQ);
-  status              = zmq_connect(client_socket, "tcp://localhost:5555");
-  handle_status(status);
-
-  std::vector<char> buff(128);
-
-  printf("Client send\n");
-  status = zmq_send(client_socket, "Please", 6, 0);
-  handle_errno(status);
-
-  printf("Client receive\n");
-  status = zmq_recv(client_socket, buff.data(), buff.size(), 0);
-  handle_errno(status);
-
-  printf("Client socket receieved request: %s\n", buff.data());
-
-  zmq_close(client_socket);
-}
-
 node::node()
 {
   printf("Begin\n");
@@ -67,21 +41,37 @@ node::node()
   status  = zmq_bind(socket_, "tcp://*:5555");
   handle_status(status);
 
-  std::thread       t(client_thread);
+  void *client_socket = zmq_socket(context_, ZMQ_REQ);
+  status              = zmq_connect(client_socket, "tcp://localhost:5555");
+  handle_status(status);
 
-  std::vector<char> buff(128);
+  std::array<char, 128> buff;
 
-  printf("Socket receive\n");
-  status = zmq_recv(socket_, buff.data(), buff.size(), 0);
-  handle_errno(status);
+  for (int i = 0; i < 10000; ++i) {
+    printf("Client send\n");
+    status = zmq_send(client_socket, "Please", 6, 0);
+    handle_errno(status);
 
-  printf("Server socket receieved request: %s\n", buff.data());
+    printf("Socket receive\n");
+    buff.fill(0);
+    status = zmq_recv(socket_, buff.data(), buff.size(), 0);
+    handle_errno(status);
 
-  printf("Socket send\n");
-  status = zmq_send(socket_, "Thank you", 9, 0);
-  handle_errno(status);
+    printf("Server socket receieved request: \"%s\"\n", buff.data());
 
-  t.join();
+    printf("Socket send\n");
+    status = zmq_send(socket_, "Thank you", 9, 0);
+    handle_errno(status);
+
+    printf("Client receive\n");
+    buff.fill(0);
+    status = zmq_recv(client_socket, buff.data(), buff.size(), 0);
+    handle_errno(status);
+
+    printf("Client socket receieved request: \"%s\"\n", buff.data());
+  }
+
+  zmq_close(client_socket);
 }
 
 node::~node()
