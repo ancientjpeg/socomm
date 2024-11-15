@@ -17,16 +17,8 @@ FetchContent_Declare(
     GIT_TAG        v4.3.5
 )
 
-FetchContent_Declare(
-    czmq
-    GIT_REPOSITORY https://github.com/zeromq/czmq.git
-    GIT_TAG        v4.2.1
-)
-
 FetchContent_MakeAvailable(libzmq)
-FetchContent_MakeAvailable(czmq)
 
-
-target_link_libraries(socomm PUBLIC czmq-static libzmq-static)
+target_link_libraries(socomm PUBLIC libzmq-static)
 
 
