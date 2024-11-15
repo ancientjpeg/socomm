@@ -8,7 +8,7 @@
 #ifndef SOCOMM_SOCOMM_H_
 #define SOCOMM_SOCOMM_H_
 
-#include "socomm/broadcast_handler.h"
+#include <zmq.h>
 
 namespace socomm {
 
@@ -18,6 +18,8 @@ public:
   ~node();
 
 private:
+  void *context_ = nullptr;
+  void *socket_  = nullptr;
 };
 
 } // namespace socomm
