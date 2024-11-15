@@ -1,6 +1,6 @@
 # socomm - Dynamic Library Communication
 
-`socomm` (for `.so` Communication) is a C++ library implemented on top of [czmq](https://github.com/zeromq/czmq) that implements (TODO: implement) coherent and predictable communication between code in multiple dynamic libraries that may be linked in the same or different processes. Its intention is to address the current headaches surrounding inter-plugin communication for common audio plugin wrapper formats (AU/VST/VST3/etc.), but is extensible to any software that struggles with a similar paradigm.
+`socomm` (for `.so` Communication) is a C++ library implemented on top of [libzmq](https://github.com/zeromq/libzmq) that implements (TODO: implement) coherent and predictable communication between code in multiple dynamic libraries that may be linked in the same or different processes. Its intention is to address the current headaches surrounding inter-plugin communication for common audio plugin wrapper formats (AU/VST/VST3/etc.), but is extensible to any software that struggles with a similar paradigm.
 
 ## Background
 

@@ -8,10 +8,18 @@
 #ifndef SOCOMM_SOCOMM_H_
 #define SOCOMM_SOCOMM_H_
 
-#include "czmq.h"
+#include "socomm/broadcast_handler.h"
 
 namespace socomm {
-void test_function();
-}
+
+class node {
+public:
+  node();
+  ~node();
+
+private:
+};
+
+} // namespace socomm
 
 #endif

@@ -9,7 +9,11 @@
 
 namespace socomm {
 
-void test_function()
+node::node()
+{
+}
+
+node::~node()
 {
 }
 
