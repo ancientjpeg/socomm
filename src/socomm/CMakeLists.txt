@@ -11,11 +11,18 @@ target_include_directories(socomm PUBLIC
 include(FetchContent)
 
 FetchContent_Declare(
+    libzmq
+    GIT_REPOSITORY https://github.com/zeromq/libzmq.git
+    GIT_TAG        v4.3.5
+)
+
+FetchContent_Declare(
   czmq
   GIT_REPOSITORY https://github.com/zeromq/czmq
   GIT_TAG        v4.2.1 
 )
 
+FetchContent_MakeAvailable(libzmq)
 FetchContent_MakeAvailable(czmq)
 
-target_link_libraries(socomm PRIVATE czmq)
+target_link_libraries(socomm PUBLIC libzmq czmq)

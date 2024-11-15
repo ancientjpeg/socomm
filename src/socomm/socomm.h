@@ -8,6 +8,8 @@
 #ifndef SOCOMM_SOCOMM_H_
 #define SOCOMM_SOCOMM_H_
 
+#include "czmq.h"
+
 namespace socomm {
 void test_function();
 }
