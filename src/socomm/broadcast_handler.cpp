@@ -7,49 +7,86 @@
 
 #include "broadcast_handler.h"
 #include "socomm/helpers.h"
+#include "socomm/uuid.h"
 #include <array>
 #include <cassert>
 #include <iostream>
 
 namespace socomm {
 
+const char *addr  = "udp://239.0.0.1:9325";
+const char *gname = "radio_group";
+
 broadcast_handler::broadcast_handler()
 {
   //  Connecting using a Multicast address
   radio_socket_ = zmq_socket(helpers::get_global_zmq_ctx(), ZMQ_RADIO);
-  int rc        = zmq_connect(radio_socket_, "udp://239.0.0.1:9325");
+  int rc        = zmq_connect(radio_socket_, addr);
+  if (rc == -1) {
+    disconnect();
+  }
   helpers::handle_errno(rc);
 
   dish_socket_ = zmq_socket(helpers::get_global_zmq_ctx(), ZMQ_DISH);
-  rc           = zmq_connect(dish_socket_, "udp://239.0.0.1:9325");
+  rc           = zmq_bind(dish_socket_, addr);
+  if (rc == -1) {
+    disconnect();
+  }
+  helpers::handle_errno(rc);
+
+  rc = zmq_join(dish_socket_, gname);
   helpers::handle_errno(rc);
 }
 
 broadcast_handler::~broadcast_handler()
 {
-  zmq_close(radio_socket_);
-  zmq_close(dish_socket_);
+  disconnect();
 }
 
-void broadcast_handler::post(std::string msg)
+void broadcast_handler::post(void *data, size_t size)
 {
-  int rc = zmq_send(radio_socket_, msg.data(), msg.size(), 0);
 
+  void *msg_data = malloc(size);
+  std::memcpy(msg_data, data, size);
+  zmq_msg_t out_msg;
+  zmq_msg_init_data(&out_msg, msg_data, size, helpers::compatible_free,
+                    nullptr);
+  zmq_msg_set_group(&out_msg, gname);
+
+  int rc = zmq_sendmsg(radio_socket_, &out_msg, 0);
   helpers::handle_errno(rc);
 }
 
-void broadcast_handler::poll()
+bool broadcast_handler::poll()
 {
+  /* https://gist.github.com/Mystfit/6c015257b637ae31bcb63130da67627c */
   std::array<char, 1024> read_buf = {};
-  int rc = zmq_recv(dish_socket_, read_buf.data(), read_buf.size(), 0);
+  zmq_msg_t              recv_msg;
+  zmq_msg_init(&recv_msg);
+
+  int    rc   = zmq_recvmsg(dish_socket_, &recv_msg, ZMQ_DONTWAIT);
+
+  void  *data = zmq_msg_data(&recv_msg);
+  size_t size = zmq_msg_size(&recv_msg);
+  if (size) {
+    std::cout << std::string_view((const char *)data, size) << std::endl;
+  }
+
+  zmq_msg_close(&recv_msg);
 
   if (rc == -1 && errno == EAGAIN) {
-    return;
+    return false;
   }
 
   helpers::handle_errno(rc);
 
-  std::cout << std::string_view(read_buf.data(), read_buf.size()) << std::endl;
+  return true;
+}
+
+void broadcast_handler::disconnect()
+{
+  zmq_close(radio_socket_);
+  zmq_close(dish_socket_);
 }
 
 } // namespace socomm

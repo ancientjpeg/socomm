@@ -8,6 +8,7 @@
 #ifndef SOCOMM_BROADCAST_HANDLER_H_
 #define SOCOMM_BROADCAST_HANDLER_H_
 
+#include <span>
 #include <string>
 
 namespace socomm {
@@ -18,11 +19,13 @@ public:
   ~broadcast_handler();
 
   /* TODO: change to span */
-  void post(std::string msg);
+  void post(void *data, size_t size);
 
-  void poll();
+  bool poll();
 
 private:
+  void  disconnect();
+
   void *radio_socket_ = nullptr;
   void *dish_socket_  = nullptr;
 };

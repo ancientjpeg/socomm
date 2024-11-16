@@ -56,6 +56,12 @@ inline void handle_errno(int status)
   exit(errno);
 }
 
+/* use to create simply malloc'd zmsg structures */
+inline void compatible_free(void *data, void *)
+{
+  free(data);
+}
+
 } // namespace helpers
 
 } // namespace socomm

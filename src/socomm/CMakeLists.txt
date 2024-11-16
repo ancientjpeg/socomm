@@ -6,6 +6,7 @@ add_library(socomm
   node.h
   socomm.cpp
   socomm.h
+  uuid.h
 )
 
 get_filename_component(PARENT_DIR "${CMAKE_CURRENT_LIST_DIR}" DIRECTORY)
@@ -19,8 +20,8 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/zeromq/libzmq.git
     GIT_TAG        v4.3.5
 )
-
 FetchContent_MakeAvailable(libzmq)
+
 
 target_link_libraries(socomm PUBLIC libzmq-static)
 
