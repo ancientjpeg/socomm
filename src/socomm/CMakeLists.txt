@@ -1,6 +1,9 @@
 add_library(socomm
   broadcast_handler.cpp
   broadcast_handler.h
+  helpers.h
+  node.cpp
+  node.h
   socomm.cpp
   socomm.h
 )
