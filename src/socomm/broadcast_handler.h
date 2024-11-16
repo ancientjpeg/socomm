@@ -8,7 +8,7 @@
 #ifndef SOCOMM_BROADCAST_HANDLER_H_
 #define SOCOMM_BROADCAST_HANDLER_H_
 
-#include <array>
+#include <string>
 
 namespace socomm {
 class broadcast_handler {
@@ -23,7 +23,8 @@ public:
   void poll();
 
 private:
-  void *broadcast_socket_ = nullptr;
+  void *radio_socket_ = nullptr;
+  void *dish_socket_  = nullptr;
 };
 } // namespace socomm
 
