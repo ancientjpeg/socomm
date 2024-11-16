@@ -4,5 +4,7 @@
 
 int main(void)
 {
-  socomm::node node;
+  errno = 0;
+  socomm::broadcast_handler bh;
+  bh.poll();
 }
