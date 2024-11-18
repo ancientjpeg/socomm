@@ -7,7 +7,6 @@
 
 #include "broadcast_handler.h"
 #include "socomm/helpers.h"
-#include "socomm/uuid.h"
 #include <array>
 #include <cassert>
 #include <iostream>
