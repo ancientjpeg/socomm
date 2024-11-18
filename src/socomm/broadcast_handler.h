@@ -8,6 +8,9 @@
 #ifndef SOCOMM_BROADCAST_HANDLER_H_
 #define SOCOMM_BROADCAST_HANDLER_H_
 
+#include <span>
+#include <string>
+
 namespace socomm {
 class broadcast_handler {
 public:
@@ -15,9 +18,16 @@ public:
 
   ~broadcast_handler();
 
-  void event_loop();
+  /* TODO: change to span */
+  void post(void *data, size_t size);
+
+  bool poll();
 
 private:
+  void  disconnect();
+
+  void *radio_socket_ = nullptr;
+  void *dish_socket_  = nullptr;
 };
 } // namespace socomm
 
