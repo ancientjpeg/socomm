@@ -8,20 +8,9 @@
 #ifndef SOCOMM_NODE_H_
 #define SOCOMM_NODE_H_
 
-#include "socomm/broadcast_handler.h"
+typedef struct socomm_node_t socomm_node;
 
-namespace socomm {
-
-class node {
-public:
-  node();
-  ~node();
-
-private:
-  broadcast_handler broadcast_handler_;
-  void             *socket_ = nullptr;
-};
-
-} // namespace socomm
+socomm_node                 *socomm_node_create();
+void                         socomm_node_destroy(socomm_node *node);
 
 #endif

@@ -3,12 +3,13 @@ add_library(socomm
   broadcast_handler.h
   helpers.c
   helpers.h
-  node.cpp
+  node.c
   node.h
-  socomm.cpp
   socomm.h
-  uuid.h
 )
+
+file(GLOB HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/*.h")  # Adjust the pattern to match your directory structure
+set_source_files_properties(${HEADER_FILES} PROPERTIES LANGUAGE C)
 
 get_filename_component(PARENT_DIR "${CMAKE_CURRENT_LIST_DIR}" DIRECTORY)
 target_include_directories(socomm PUBLIC 

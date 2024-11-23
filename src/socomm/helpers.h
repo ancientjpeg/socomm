@@ -36,7 +36,7 @@ inline void socomm_handle_errno(int status)
 }
 
 /* use to create simply malloc'd zmsg structures */
-inline void socomm_compatible_free(void *data, void *)
+inline void socomm_compatible_free(void *data, void *hint)
 {
   free(data);
 }

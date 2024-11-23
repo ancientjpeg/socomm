@@ -6,15 +6,9 @@
  */
 
 #include "socomm/node.h"
+#include "socomm/broadcast_handler.h"
 
-namespace socomm {
-
-node::node()
-{
-}
-
-node::~node()
-{
-}
-
-} // namespace socomm
+typedef struct socomm_node_t {
+  socomm_broadcast_handler *broadcast_handler_;
+  void                     *socket_;
+} socomm_node;
