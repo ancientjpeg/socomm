@@ -29,4 +29,7 @@ int main(void)
     while (socomm_broadcast_handler_poll(bh));
     usleep(2.5e5);
   }
+
+  socomm_broadcast_handler_destroy(&bh);
+  socomm_broadcast_handler_destroy(&bh2);
 }
