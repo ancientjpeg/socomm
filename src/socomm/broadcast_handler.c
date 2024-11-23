@@ -48,7 +48,7 @@ socomm_broadcast_handler *socomm_broadcast_handler_create()
 void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh)
 {
   socomm_broadcast_handler_disconnect(*bh);
-  bh = NULL;
+  *bh = NULL;
 }
 
 void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
