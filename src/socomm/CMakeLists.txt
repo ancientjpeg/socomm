@@ -22,7 +22,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(libzmq)
 
+FetchContent_Declare(
+  ustd
+  GIT_REPOSITORY https://github.com/ancientjpeg/ustd
+  GIT_TAG        main 
+)
 
-target_link_libraries(socomm PUBLIC libzmq-static)
+FetchContent_MakeAvailable(ustd)
+
+target_link_libraries(socomm PUBLIC libzmq-static ustd)
 
 
