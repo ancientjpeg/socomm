@@ -8,27 +8,21 @@
 #ifndef SOCOMM_BROADCAST_HANDLER_H_
 #define SOCOMM_BROADCAST_HANDLER_H_
 
-#include <span>
-#include <string>
+#include <stdbool.h>
+#include <stddef.h>
 
-namespace socomm {
-class broadcast_handler {
-public:
-  broadcast_handler();
+typedef struct socomm_broadcast_handler_t socomm_broadcast_handler;
 
-  ~broadcast_handler();
+socomm_broadcast_handler                 *socomm_broadcast_handler_create();
 
-  /* TODO: change to span */
-  void post(void *data, size_t size);
+void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh);
 
-  bool poll();
+void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
+                                   void                     *data,
+                                   size_t                    size);
 
-private:
-  void  disconnect();
+bool socomm_broadcast_handler_poll(socomm_broadcast_handler *bh);
 
-  void *radio_socket_ = nullptr;
-  void *dish_socket_  = nullptr;
-};
-} // namespace socomm
+void socomm_broadcast_handler_disconnect(socomm_broadcast_handler *bh);
 
 #endif
