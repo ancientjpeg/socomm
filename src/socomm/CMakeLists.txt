@@ -1,6 +1,7 @@
 add_library(socomm
-  broadcast_handler.cpp
+  broadcast_handler.c
   broadcast_handler.h
+  helpers.c
   helpers.h
   node.cpp
   node.h
@@ -22,6 +23,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(libzmq)
 
+
+target_compile_definitions(libzmq-static
+    PUBLIC
+    ZMQ_BUILD_DRAFT_API
+)
 
 target_link_libraries(socomm PUBLIC libzmq-static)
 

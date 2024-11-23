@@ -8,35 +8,14 @@
 #ifndef SOCOMM_HELPERS_H_
 #define SOCOMM_HELPERS_H_
 
-#include <cstdlib>
-#include <cstring>
+#include <stdlib.h>
+#include <string.h>
 #include <zmq.h>
 
-namespace socomm {
+void       *socomm_get_global_ctx();
+void        socomm_free_global_ctx();
 
-namespace helpers {
-
-inline void *get_global_zmq_ctx()
-{
-
-  static struct holder {
-    holder() : ctx(zmq_ctx_new())
-    {
-    }
-
-    ~holder()
-    {
-      zmq_ctx_destroy(ctx);
-    }
-
-    void *const ctx;
-
-  } global_ctx_holder;
-
-  return global_ctx_holder.ctx;
-}
-
-inline void handle_status(int status)
+inline void socomm_handle_status(int status)
 {
   if (status == 0) {
     return;
@@ -46,7 +25,7 @@ inline void handle_status(int status)
   exit(status);
 }
 
-inline void handle_errno(int status)
+inline void socomm_handle_errno(int status)
 {
   if (status != -1) {
     return;
@@ -57,13 +36,9 @@ inline void handle_errno(int status)
 }
 
 /* use to create simply malloc'd zmsg structures */
-inline void compatible_free(void *data, void *)
+inline void socomm_compatible_free(void *data, void *)
 {
   free(data);
 }
-
-} // namespace helpers
-
-} // namespace socomm
 
 #endif
