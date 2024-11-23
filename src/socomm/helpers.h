@@ -15,7 +15,7 @@
 void       *socomm_get_global_ctx();
 void        socomm_free_global_ctx();
 
-inline void socomm_handle_status(int status)
+static void socomm_handle_status(int status)
 {
   if (status == 0) {
     return;
@@ -25,7 +25,7 @@ inline void socomm_handle_status(int status)
   exit(status);
 }
 
-inline void socomm_handle_errno(int status)
+static void socomm_handle_errno(int status)
 {
   if (status != -1) {
     return;
@@ -36,7 +36,7 @@ inline void socomm_handle_errno(int status)
 }
 
 /* use to create simply malloc'd zmsg structures */
-inline void socomm_compatible_free(void *data, void *hint)
+static void socomm_compatible_free(void *data, void *hint)
 {
   free(data);
 }

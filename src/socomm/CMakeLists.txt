@@ -1,11 +1,7 @@
 add_library(socomm
   broadcast_handler.c
-  broadcast_handler.h
   helpers.c
-  helpers.h
   node.c
-  node.h
-  socomm.h
 )
 
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/*.h")  # Adjust the pattern to match your directory structure
@@ -13,7 +9,13 @@ set_source_files_properties(${HEADER_FILES} PROPERTIES LANGUAGE C)
 
 get_filename_component(PARENT_DIR "${CMAKE_CURRENT_LIST_DIR}" DIRECTORY)
 target_include_directories(socomm PUBLIC 
-  ${PARENT_DIR}
+    ${PARENT_DIR}
+)
+target_include_directories(socomm 
+    PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}
+    INTERFACE 
+    ${CMAKE_SOURCE_DIR}/include
 )
 
 Include(FetchContent)
