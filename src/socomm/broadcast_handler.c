@@ -17,11 +17,14 @@ typedef struct socomm_broadcast_handler_t {
   void *dish_socket_;
 } socomm_broadcast_handler;
 
-const char               *addr  = "udp://239.0.0.1:9325";
-const char               *gname = "radio_group";
+const char *addr  = "udp://239.0.0.1:9325";
+const char *gname = "radio_group";
 
-socomm_broadcast_handler *socomm_broadcast_handler_create()
+socomm_broadcast_handler *
+socomm_broadcast_handler_create(const char *group_name, size_t group_name_size)
 {
+  assert(group_name_size <= 16);
+
   //  Connecting using a Multicast address
   socomm_broadcast_handler *bh
       = (socomm_broadcast_handler *)malloc(sizeof(socomm_broadcast_handler));

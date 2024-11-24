@@ -3,6 +3,7 @@ add_library(socomm
   helpers.c
   node.c
   str.c
+  uuid/uuid.c
 )
 
 file(GLOB HEADER_FILES "${CMAKE_CURRENT_LIST_DIR}/*.h")  # Adjust the pattern to match your directory structure

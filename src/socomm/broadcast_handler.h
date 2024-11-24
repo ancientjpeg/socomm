@@ -14,7 +14,8 @@
 
 typedef struct socomm_broadcast_handler_t socomm_broadcast_handler;
 
-socomm_broadcast_handler                 *socomm_broadcast_handler_create();
+socomm_broadcast_handler *
+socomm_broadcast_handler_create(const char *group_name, size_t group_name_size);
 
 void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh);
 
