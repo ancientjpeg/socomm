@@ -11,7 +11,7 @@ zmq_msg_t serialize_message(socomm_message *msg)
   const int header_size = sizeof(socomm_header);
 }
 
-socomm_message deserialize_message(zmq_msg_t *msg)
+socomm_message *deserialize_message(zmq_msg_t *msg)
 {
   const void  *data = zmq_msg_data(msg);
   const size_t size = zmq_msg_size(msg);

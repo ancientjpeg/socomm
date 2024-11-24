@@ -70,7 +70,7 @@ typedef struct socomm_message_t socomm_message;
  */
 socomm_message      *socomm_message_create(socomm_header header,
                                            const char   *message_type,
-                                           void         *message_data,
+                                           const void   *message_data,
                                            size_t        message_data_size);
 
 void                 socomm_message_destroy(socomm_message **message);

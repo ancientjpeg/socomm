@@ -1,6 +1,8 @@
 add_library(socomm
   broadcast_handler.c
   helpers.c
+  header.c
+  header_serde.c
   node.c
   str.c
   uuid/uuid.c

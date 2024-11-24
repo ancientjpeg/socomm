@@ -6,7 +6,7 @@ foreach(test_file ${TEST_FILES})
     set(test_target_name "socomm_${test_name}_test")
 
     add_executable(${test_target_name}
-      broadcast_handler.test.c
+      ${test_file}
     )
     target_link_libraries(
       ${test_target_name} socomm  

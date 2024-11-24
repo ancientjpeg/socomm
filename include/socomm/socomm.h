@@ -13,8 +13,10 @@ extern "C" {
 #endif
 
 #include <socomm/broadcast_handler.h>
+#include <socomm/header.h>
 #include <socomm/helpers.h>
 #include <socomm/node.h>
+#include <socomm/uuid/uuid.h>
 
 #ifdef __cplusplus
 };

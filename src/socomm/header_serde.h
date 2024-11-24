@@ -23,6 +23,6 @@ zmq_msg_t serialize_message(socomm_message *msg);
  * @brief Deserialize a `zmq_msg_t` into a `socomm_header`..
  * @note Will call `zmq_msg_close` on `msg`.
  */
-socomm_header deserialize_message(zmq_msg_t *msg);
+socomm_message *deserialize_message(zmq_msg_t *msg);
 
 #endif
