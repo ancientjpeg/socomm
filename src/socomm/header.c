@@ -28,6 +28,9 @@ static const int predicted_msg_size = (sizeof(socomm_header) + sizeof(void *)
 static_assert(sizeof(socomm_message) == predicted_msg_size,
               "Unexpected socomm header sizing");
 
+static_assert(sizeof(uintptr_t) <= sizeof(uint64_t),
+              "Systems greater than 64 bit not supported.");
+
 static inline bool socomm_valid_command(const char *message_type)
 {
 
