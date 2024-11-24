@@ -2,7 +2,7 @@
 #include "socomm/uuid/uuid.h"
 #include <string.h>
 
-int main()
+void test_messages()
 {
   uuid4_state_t uuid_state;
   uuid4_t       uuid;
@@ -37,4 +37,10 @@ int main()
   assert(socomm_message_create(header, "NOTCMD", NULL, 0) == NULL);
   /* test out-of-bounds command */
   assert(socomm_message_create(header, "TOO_LONG_STRING", NULL, 0) == NULL);
+}
+
+int main()
+{
+  test_messages();
+  return 0;
 }

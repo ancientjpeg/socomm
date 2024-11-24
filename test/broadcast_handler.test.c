@@ -67,4 +67,6 @@ int main(void)
   socomm_broadcast_handler_destroy(&bh1);
   assert(bh0 == NULL);
   assert(bh1 == NULL);
+
+  return 0;
 }
