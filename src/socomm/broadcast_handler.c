@@ -62,7 +62,7 @@ void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
   zmq_msg_init_data(&out_msg, msg_data, size, socomm_compatible_free, NULL);
   zmq_msg_set_group(&out_msg, gname);
 
-  int rc = zmq_sendmsg(bh->radio_socket_, &out_msg, 0);
+  int rc = zmq_msg_send(&out_msg, bh->radio_socket_, 0);
   socomm_handle_errno(rc);
 }
 
@@ -82,9 +82,6 @@ int socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
     *str_ptr = socomm_string_create();
     zmq_msg_close(&recv_msg);
 
-    if (errno == EAGAIN) {
-      return EAGAIN;
-    }
     return -1;
   }
 
