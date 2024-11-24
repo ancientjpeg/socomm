@@ -8,7 +8,7 @@
 #ifndef SOCOMM_BROADCAST_HANDLER_H_
 #define SOCOMM_BROADCAST_HANDLER_H_
 
-#include "buffer.h"
+#include "str.h"
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -36,7 +36,7 @@ void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
  * in accordance with `zmq_msg_recv`.
  */
 int  socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
-                                   socomm_buffer           **buf_ptr);
+                                   socomm_string           **buf_ptr);
 
 void socomm_broadcast_handler_disconnect(socomm_broadcast_handler *bh);
 

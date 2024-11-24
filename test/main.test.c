@@ -31,21 +31,21 @@ int main(void)
 
     int rc0, rc1;
     do {
-      socomm_buffer *buf;
+      socomm_string *buf;
       rc0 = socomm_broadcast_handler_poll(bh0, &buf);
 
       assert(rc0 != -1 || errno == EAGAIN);
 
       if (!rc0) {
         printf("Handler 0 received message: %s\n",
-               (const char *)socomm_buffer_data(buf));
+               (const char *)socomm_string_data(buf));
       }
 
       rc1 = socomm_broadcast_handler_poll(bh1, &buf);
       assert(rc1 != -1 || errno == EAGAIN);
       if (!rc1) {
         printf("Handler 1 received message: %s\n",
-               (const char *)socomm_buffer_data(buf));
+               (const char *)socomm_string_data(buf));
       }
 
       printf("sleep 50\n");

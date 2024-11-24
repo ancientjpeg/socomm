@@ -67,10 +67,10 @@ void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
 }
 
 int socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
-                                  socomm_buffer           **buf_ptr)
+                                  socomm_string           **buf_ptr)
 {
 
-  socomm_buffer_destroy(buf_ptr);
+  socomm_string_destroy(buf_ptr);
 
   /* https://gist.github.com/Mystfit/6c015257b637ae31bcb63130da67627c */
   char read_buf[1024];
@@ -81,7 +81,7 @@ int socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
   int recv_code = zmq_msg_recv(&recv_msg, bh->dish_socket_, ZMQ_DONTWAIT);
 
   if (recv_code == -1) {
-    *buf_ptr = socomm_buffer_create();
+    *buf_ptr = socomm_string_create();
     zmq_msg_close(&recv_msg);
 
     if (errno == EAGAIN) {
@@ -93,7 +93,7 @@ int socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
   void  *msg_data = zmq_msg_data(&recv_msg);
   size_t msg_size = zmq_msg_size(&recv_msg);
 
-  *buf_ptr        = socomm_buffer_create_data(msg_data, msg_size);
+  *buf_ptr        = socomm_string_create_data(msg_data, msg_size);
 
   zmq_msg_close(&recv_msg);
 
