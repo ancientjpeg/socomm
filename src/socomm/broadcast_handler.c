@@ -6,6 +6,7 @@
  */
 
 #include "broadcast_handler.h"
+#include "header.h"
 #include "helpers.h"
 #include <assert.h>
 #include <stdlib.h>
@@ -49,7 +50,6 @@ socomm_broadcast_handler_create(const char *group_name)
 
   memcpy(bh->group_name, group_name, group_name_size);
   bh->group_name[group_name_size] = '\0';
-
   return bh;
 }
 
