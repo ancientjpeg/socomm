@@ -16,15 +16,16 @@ typedef struct socomm_message_t {
   socomm_header header;
 
   /* use message_t to discern intent */
-  uint8_t message_type[SOCOMM_MESSAGE_TYPE_MAX_BYTES];
+  uint8_t  message_type[SOCOMM_MESSAGE_TYPE_MAX_BYTES];
 
-  size_t  data_size;
-  void   *data;
+  uint64_t data_size;
+  uint64_t data; /* to be cast to a void* */
 } socomm_message;
 
-static_assert(sizeof(socomm_message)
-                  == (sizeof(socomm_header) + sizeof(void *) + sizeof(size_t)
-                      + 8 * sizeof(uint8_t)),
+static const int predicted_msg_size = (sizeof(socomm_header) + sizeof(void *)
+                                       + sizeof(size_t) + 8 * sizeof(uint8_t));
+
+static_assert(sizeof(socomm_message) == predicted_msg_size,
               "Unexpected socomm header sizing");
 
 static inline bool socomm_valid_command(const char *message_type)
@@ -80,11 +81,12 @@ socomm_message *socomm_message_create(socomm_header header,
   memcpy(message->message_type, message_type, SOCOMM_MESSAGE_TYPE_MAX_BYTES);
 
   if (message_data == NULL || message_data_size == 0) {
-    message->data = NULL;
+    message->data = (uint64_t)NULL;
   }
   else {
-    message->data = malloc(message_data_size);
-    memcpy(message->data, message_data, message_data_size);
+    void *data = malloc(message_data_size);
+    memcpy(data, message_data, message_data_size);
+    message->data = (uint64_t)data;
   }
 
   message->data_size = message_data_size;
@@ -98,8 +100,9 @@ void socomm_message_destroy(socomm_message **message)
     return;
   }
 
-  if ((*message)->data != NULL) {
-    free((*message)->data);
+  const void *msg_data = socomm_message_data(*message);
+  if (msg_data != NULL) {
+    free((void *)msg_data);
   }
 
   free(*message);
@@ -113,7 +116,7 @@ const socomm_header *socomm_message_header(socomm_message *message)
 
 const void *socomm_message_data(socomm_message *message)
 {
-  return message->data;
+  return (const void *)message->data;
 }
 
 const size_t socomm_message_data_size(socomm_message *message)
@@ -121,15 +124,66 @@ const size_t socomm_message_data_size(socomm_message *message)
   return message->data_size;
 }
 
+/******************************************************************************/
+/*******************    SERIALIZATION / DESERIALIZATION   *********************/
+/******************************************************************************/
+
 zmq_msg_t serialize_message(socomm_message *msg)
 {
-  const int header_size = sizeof(socomm_header);
+
+  const int   header_size = sizeof(socomm_header);
+  zmq_msg_t   zmq_msg;
+
+  const void *msg_data      = socomm_message_data(msg);
+  uint64_t    msg_data_size = socomm_message_data_size(msg);
+
+  if (msg_data == NULL) {
+    assert(false);
+    return zmq_msg;
+  }
+
+  const int message_type_offset = offsetof(socomm_message, message_type);
+  const int data_size_offset    = offsetof(socomm_message, data_size);
+  const int data_offset         = offsetof(socomm_message, data);
+  int       zmq_msg_size        = data_offset + msg_data_size;
+
+  zmq_msg_init_size(&zmq_msg, zmq_msg_size);
+  void *zmq_msg_data_ptr = zmq_msg_data(&zmq_msg);
+
+  memcpy(zmq_msg_data_ptr, msg, header_size);
+  memcpy(zmq_msg_data_ptr,
+         msg + message_type_offset,
+         SOCOMM_MESSAGE_TYPE_MAX_BYTES);
+  memcpy(zmq_msg_data_ptr, msg + data_size_offset, sizeof(uint64_t));
+  memcpy(zmq_msg_data_ptr, msg + data_offset, msg_data_size);
+
+  return zmq_msg;
 }
 
 socomm_message *deserialize_message(zmq_msg_t *msg)
 {
   const void  *data = zmq_msg_data(msg);
   const size_t size = zmq_msg_size(msg);
+
   if (data == NULL || size == 0) {
+    assert(false);
+    return NULL;
   }
+
+  socomm_header header = *(socomm_header *)data;
+  uint8_t      *message_type
+      = (uint8_t *)(data + offsetof(socomm_message, message_type));
+  uint64_t data_size
+      = *(uint64_t *)(data + offsetof(socomm_message, data_size));
+  const void *data_ptr = (void *)(data + offsetof(socomm_message, data));
+
+  if (memcmp(header.preamble, "SCM", 3)) {
+    assert(false);
+    return NULL;
+  }
+
+  return socomm_message_create(header,
+                               (const char *)message_type,
+                               data_ptr,
+                               data_size);
 }
