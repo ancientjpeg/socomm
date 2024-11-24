@@ -1,5 +1,5 @@
 /**
- * @file broadcast_handler.cpp
+ * @file broadcast_handler.c
  * @author Jackson Kaplan (JwyattK@gmail.com)
  * @date 2024-11-15
  * Copyright (c) 2024. All rights reserved.
@@ -51,6 +51,13 @@ void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh)
   *bh = NULL;
 }
 
+void socomm_broadcast_handler_post_sstr(socomm_broadcast_handler *bh,
+                                        socomm_string            *str)
+{
+  socomm_broadcast_handler_post(bh, (void *)socomm_string_data(str),
+                                socomm_string_size(str));
+}
+
 void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
                                    void                     *data,
                                    size_t                    size)
@@ -66,29 +73,39 @@ void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
   socomm_handle_errno(rc);
 }
 
-bool socomm_broadcast_handler_poll(socomm_broadcast_handler *bh)
+int socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
+                                  socomm_string           **str_ptr)
 {
+
   /* https://gist.github.com/Mystfit/6c015257b637ae31bcb63130da67627c */
   char read_buf[1024];
   memset(read_buf, 0, 1024);
   zmq_msg_t recv_msg;
   zmq_msg_init(&recv_msg);
 
-  int    rc   = zmq_recvmsg(bh->dish_socket_, &recv_msg, ZMQ_DONTWAIT);
+  int    recv_code = zmq_recvmsg(bh->dish_socket_, &recv_msg, ZMQ_DONTWAIT);
 
-  void  *data = zmq_msg_data(&recv_msg);
-  size_t size = zmq_msg_size(&recv_msg);
+  void  *data      = zmq_msg_data(&recv_msg);
+  size_t size      = zmq_msg_size(&recv_msg);
+  socomm_string *s = socomm_string_create_data(data, size);
+
+  socomm_string *temp;
+  temp     = *str_ptr;
+  *str_ptr = s;
+  socomm_string_destroy(&temp);
+
   if (size) {
     printf("%s\n", (char *)data);
   }
 
   zmq_msg_close(&recv_msg);
 
-  if (rc == -1 && errno == EAGAIN) {
-    return false;
+  if (recv_code == -1) {
+    if (errno == EAGAIN) {
+      return EAGAIN;
+    }
+    return -1;
   }
-
-  socomm_handle_errno(rc);
 
   return true;
 }

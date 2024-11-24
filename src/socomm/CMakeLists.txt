@@ -15,7 +15,7 @@ target_include_directories(socomm PUBLIC
 target_include_directories(socomm 
     PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
-    INTERFACE 
+    PUBLIC 
     ${CMAKE_SOURCE_DIR}/include
 )
 
