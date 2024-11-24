@@ -21,10 +21,9 @@ typedef struct socomm_node_t {
 
 socomm_node *socomm_node_create()
 {
-  const char  *gname = "default_gname";
-  socomm_node *node  = malloc(sizeof(socomm_node));
-  node->broadcast_handler_
-      = socomm_broadcast_handler_create(gname, strlen(gname));
+  const char  *gname       = "default_gname";
+  socomm_node *node        = malloc(sizeof(socomm_node));
+  node->broadcast_handler_ = socomm_broadcast_handler_create(gname);
 
   return node;
 }

@@ -15,15 +15,17 @@
 typedef struct socomm_broadcast_handler_t {
   void *radio_socket_;
   void *dish_socket_;
+  char  group_name[32];
 } socomm_broadcast_handler;
 
-const char *addr  = "udp://239.0.0.1:9325";
-const char *gname = "radio_group";
+const char *addr = "udp://239.0.0.1:9325";
 
 socomm_broadcast_handler *
-socomm_broadcast_handler_create(const char *group_name, size_t group_name_size)
+socomm_broadcast_handler_create(const char *group_name)
 {
-  assert(group_name_size <= 16);
+  size_t group_name_size = strlen(group_name);
+  assert(group_name_size
+         < sizeof(((socomm_broadcast_handler *)NULL)->group_name));
 
   //  Connecting using a Multicast address
   socomm_broadcast_handler *bh
@@ -42,8 +44,11 @@ socomm_broadcast_handler_create(const char *group_name, size_t group_name_size)
   }
   socomm_handle_errno(rc);
 
-  rc = zmq_join(bh->dish_socket_, gname);
+  rc = zmq_join(bh->dish_socket_, group_name);
   socomm_handle_errno(rc);
+
+  memcpy(bh->group_name, group_name, group_name_size);
+  bh->group_name[group_name_size] = '\0';
 
   return bh;
 }
@@ -63,7 +68,7 @@ void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
   memcpy(msg_data, data, size);
   zmq_msg_t out_msg;
   zmq_msg_init_data(&out_msg, msg_data, size, socomm_compatible_free, NULL);
-  zmq_msg_set_group(&out_msg, gname);
+  zmq_msg_set_group(&out_msg, bh->group_name);
 
   int rc = zmq_msg_send(&out_msg, bh->radio_socket_, 0);
   socomm_handle_errno(rc);

@@ -25,12 +25,10 @@ int poll_handler(socomm_broadcast_handler *bh, int idx, int timeout_ms)
 
 int main(void)
 {
-  const char *gname = "test_group_name";
+  const char *gname = "test_gname";
   debug_printf("Begin Test\n");
-  socomm_broadcast_handler *bh0
-      = socomm_broadcast_handler_create(gname, strlen(gname));
-  socomm_broadcast_handler *bh1
-      = socomm_broadcast_handler_create(gname, strlen(gname));
+  socomm_broadcast_handler *bh0 = socomm_broadcast_handler_create(gname);
+  socomm_broadcast_handler *bh1 = socomm_broadcast_handler_create(gname);
 
   for (int i = 0; i < 10; ++i) {
 
