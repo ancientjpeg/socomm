@@ -29,13 +29,28 @@ int main(void)
     socomm_broadcast_handler_post(bh0, (void *)s0, strlen(s0));
     socomm_broadcast_handler_post(bh1, (void *)s1, strlen(s1));
 
-    usleep(2.5e5);
-    int            rc;
-    socomm_buffer *buf;
+    int rc0, rc1;
     do {
-      rc = socomm_broadcast_handler_poll(bh0, &buf);
+      socomm_buffer *buf;
+      rc0 = socomm_broadcast_handler_poll(bh0, &buf);
 
-    } while ();
+      assert(rc0 != -1 || errno == EAGAIN);
+
+      if (!rc0) {
+        printf("Handler 0 received message: %s\n",
+               (const char *)socomm_buffer_data(buf));
+      }
+
+      rc1 = socomm_broadcast_handler_poll(bh1, &buf);
+      assert(rc1 != -1 || errno == EAGAIN);
+      if (!rc1) {
+        printf("Handler 1 received message: %s\n",
+               (const char *)socomm_buffer_data(buf));
+      }
+
+      printf("sleep 50\n");
+      usleep(50);
+    } while (!rc0 && !rc1);
 
     usleep(2.5e5);
   }

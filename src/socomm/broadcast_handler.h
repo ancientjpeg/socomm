@@ -18,9 +18,6 @@ socomm_broadcast_handler                 *socomm_broadcast_handler_create();
 
 void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh);
 
-void socomm_broadcast_handler_post_sstr(socomm_broadcast_handler *bh,
-                                        socomm_buffer            *str);
-
 void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
                                    void                     *data,
                                    size_t                    size);
