@@ -23,20 +23,30 @@ void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
                                    size_t                    size);
 
 /**
+ * @brief Non-blocking poll that retreieves a single message from the queue.
+ * @details Identical to calling `socomm_broadcast_handler_poll_blocking` with
+ * `0` as the timeout argument. Return values of -1 with `errno == EAGAIN`
+ * should not be considered error states but instead indicate an empty message
+ * queue.
+ */
+int socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
+                                  socomm_string           **str_ptr);
+
+/**
  * @brief Poll this handler for messages from other broadcasters. Outputs
- * a single message into
- * @note This function may return -1 with `EAGAIN` as the errno, in which case
- * there is no critical failure and you may safely continue on as it simply
- * indicates the message queue is empty.
+ * a single message into `*str_ptr`.
  *
  * @param bh
- * @param data Pointer to data to write the message into.
- * @param size
+ * @param str_ptr
+ * @param timeout_ms Timeout in milliseconds. If `timeout_ms <= 0`, this
+ * function will be called non-blocking, i.e. the ZMQ_DONTWAIT flag will be set.
  * @return If successful, number of bytes written. Else, -1 with `errno` set
- * in accordance with `zmq_msg_recv`.
+ * in accordance with `zmq_msg_recv`. If timeout is reached, will return -1
+ * with `errno == EAGAIN`
  */
-int  socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
-                                   socomm_string           **str_ptr);
+int  socomm_broadcast_handler_poll_blocking(socomm_broadcast_handler *bh,
+                                            socomm_string           **str_ptr,
+                                            int timeout_ms);
 
 void socomm_broadcast_handler_disconnect(socomm_broadcast_handler *bh);
 

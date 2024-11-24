@@ -1,5 +1,5 @@
 add_executable(socomm_test
-  main.test.c
+  broadcast_handler.test.c
 )
 
 target_link_libraries(

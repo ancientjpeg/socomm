@@ -69,6 +69,15 @@ void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
 int socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
                                   socomm_string           **str_ptr)
 {
+  return socomm_broadcast_handler_poll_blocking(bh, str_ptr, -1);
+}
+
+int socomm_broadcast_handler_poll_blocking(socomm_broadcast_handler *bh,
+                                           socomm_string           **str_ptr,
+                                           int                       timeout_ms)
+{
+  bool timeout = timeout_ms > 0;
+  int  flags   = timeout ? 0 : ZMQ_DONTWAIT;
 
   socomm_string_destroy(str_ptr);
 
@@ -76,7 +85,11 @@ int socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
   zmq_msg_t recv_msg;
   zmq_msg_init(&recv_msg);
 
-  int recv_code = zmq_msg_recv(&recv_msg, bh->dish_socket_, ZMQ_DONTWAIT);
+  if (timeout) {
+    zmq_setsockopt(bh->dish_socket_, ZMQ_RCVTIMEO, &timeout_ms, sizeof(int));
+  }
+
+  int recv_code = zmq_msg_recv(&recv_msg, bh->dish_socket_, flags);
 
   if (recv_code == -1) {
     *str_ptr = socomm_string_create();
@@ -91,6 +104,11 @@ int socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
   *str_ptr        = socomm_string_create_data(msg_data, msg_size);
 
   zmq_msg_close(&recv_msg);
+
+  if (timeout) {
+    int inf_timeout = -1;
+    zmq_setsockopt(bh->dish_socket_, ZMQ_RCVTIMEO, &inf_timeout, sizeof(int));
+  }
 
   return true;
 }
