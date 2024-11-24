@@ -36,7 +36,7 @@ void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
  * in accordance with `zmq_msg_recv`.
  */
 int  socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
-                                   socomm_string           **buf_ptr);
+                                   socomm_string           **str_ptr);
 
 void socomm_broadcast_handler_disconnect(socomm_broadcast_handler *bh);
 

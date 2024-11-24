@@ -31,27 +31,27 @@ int main(void)
 
     int rc0, rc1;
     do {
-      socomm_string *buf = NULL;
-      rc0                = socomm_broadcast_handler_poll(bh0, &buf);
+      socomm_string *str = NULL;
+      rc0                = socomm_broadcast_handler_poll(bh0, &str);
 
       assert(rc0 != -1 || errno == EAGAIN);
 
       if (!rc0) {
         printf("Handler 0 received message: %s\n",
-               (const char *)socomm_string_data(buf));
+               (const char *)socomm_string_data(str));
       }
 
-      rc1 = socomm_broadcast_handler_poll(bh1, &buf);
+      rc1 = socomm_broadcast_handler_poll(bh1, &str);
       assert(rc1 != -1 || errno == EAGAIN);
       if (!rc1) {
         printf("Handler 1 received message: %s\n",
-               (const char *)socomm_string_data(buf));
+               (const char *)socomm_string_data(str));
       }
 
       printf("sleep 50\n");
       usleep(50);
 
-      socomm_string_destroy(&buf);
+      socomm_string_destroy(&str);
 
     } while (!rc0 && !rc1);
 
