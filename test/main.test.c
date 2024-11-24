@@ -30,7 +30,13 @@ int main(void)
     socomm_broadcast_handler_post(bh1, (void *)s1, strlen(s1));
 
     usleep(2.5e5);
-    while (!socomm_broadcast_handler_poll(bh0));
+    int            rc;
+    socomm_buffer *buf;
+    do {
+      rc = socomm_broadcast_handler_poll(bh0, &buf);
+
+    } while ();
+
     usleep(2.5e5);
   }
 
