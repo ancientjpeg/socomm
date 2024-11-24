@@ -44,18 +44,20 @@ typedef struct socomm_header_t {
   /* Set to your node's server port */
   uint16_t port;
 
-  /* Signify the type of this message. */
-  socomm_message_t message_type;
-
-  /* Currently unused padding bytes */
-  uint8_t reserved[9];
+  /* Unused bytes of padding */
+  uint8_t reserved[2];
 
   /* Set to your node's uuid, which should be a uuid4 - see uuid4_gen */
   uuid4_t uuid;
 
 } socomm_header;
 
-static_assert(sizeof(socomm_header) == 32,
+static_assert(sizeof(socomm_header) == 24,
               "socomm_header must be a fixed size.");
+
+typedef struct socomm_body_t {
+  /* use message_t to discern intent */
+  uint8_t message_type[8];
+} socomm_body;
 
 #endif
