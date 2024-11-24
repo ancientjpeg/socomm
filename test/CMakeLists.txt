@@ -1,6 +1,5 @@
 file(GLOB_RECURSE TEST_FILES "${CMAKE_CURRENT_LIST_DIR}/*.test.c")
 
-enable_testing()
 foreach(test_file ${TEST_FILES})
     get_filename_component(test_name ${test_file} NAME_WE)
 

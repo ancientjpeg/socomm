@@ -67,7 +67,7 @@ void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
   void *msg_data = malloc(size);
   memcpy(msg_data, data, size);
   zmq_msg_t out_msg;
-  zmq_msg_init_data(&out_msg, msg_data, size, socomm_compatible_free, NULL);
+  zmq_msg_init_buffer(&out_msg, data, size);
   zmq_msg_set_group(&out_msg, bh->group_name);
 
   int rc = zmq_msg_send(&out_msg, bh->radio_socket_, 0);

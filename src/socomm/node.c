@@ -8,7 +8,6 @@
 #include "socomm/node.h"
 #include "socomm/broadcast_handler.h"
 #include <stdlib.h>
-#include <string.h>
 
 struct node_metadata {
   uint16_t port;

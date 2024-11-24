@@ -10,29 +10,27 @@
 
 #include "uuid/uuid.h"
 #include <assert.h>
+#include <stddef.h>
 
 #define SOCOMM_HEADER_VERSION 0
 static_assert(SOCOMM_HEADER_VERSION <= UINT8_MAX,
               "If SOCOMM_HEADER_VERSION has exceeded the range of a uint8_t, "
               "please panic.");
 
-typedef enum socomm_message_t : uint8_t {
-  /* Signifies a UDP heartbeat. */
-  PULSE,
+static const char *const SOCOMM_MESSAGE_TYPES[] = {
+    /* Signifies a UDP heartbeat. */
+    "PULSE",
 
-  /* Request to enter a group. */
-  JOIN,
+    /* Request to enter a group. */
+    "JOIN",
 
-  /* Request to leave a group. */
-  LEAVE,
+    /* Request to leave a group. */
+    "LEAVE",
 
-  /* TODO: Request to open a high-performance data stream */
-  CONNECT,
+    /* TODO: Request to open a high-performance data stream */
+    "CONNECT",
 
-} socomm_message_t;
-
-static_assert(sizeof(socomm_message_t) == 1,
-              "socomm_command_t must never exceed 1 byte");
+};
 
 typedef struct socomm_header_t {
   /* Always initialize to "SOCOMM", or the message will be considered corrupt */
@@ -55,9 +53,30 @@ typedef struct socomm_header_t {
 static_assert(sizeof(socomm_header) == 24,
               "socomm_header must be a fixed size.");
 
-typedef struct socomm_body_t {
-  /* use message_t to discern intent */
-  uint8_t message_type[8];
-} socomm_body;
+socomm_header                   socomm_header_init(uint16_t port, uuid4_t uuid);
+
+typedef struct socomm_message_t socomm_message;
+
+/**
+ * @brief Create a `socomm_message`.
+ * @details May fail if `strnlen(message_type) >= 8`
+ *
+ * @param header
+ * @param message_type One of the values in SOCOMM_MESSAGE_TYPES.
+ * @param message_data Pointer to data.
+ * @param message_data_size Size of the input data.
+ * @return Pointer to the newly allocated `socomm_message`, or `NULL` if
+ * creation failed.
+ */
+socomm_message      *socomm_message_create(socomm_header header,
+                                           const char   *message_type,
+                                           void         *message_data,
+                                           size_t        message_data_size);
+
+void                 socomm_message_destroy(socomm_message **message);
+
+const socomm_header *socomm_message_header(socomm_message *message);
+const void          *socomm_message_data(socomm_message *message);
+const size_t         socomm_message_data_size(socomm_message *message);
 
 #endif
