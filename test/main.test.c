@@ -22,8 +22,8 @@ int main(void)
     struct tm *now                  = localtime(&now_time_t);
     strftime(time_str, max_strlen, "%H:%M:%S", now);
 
-    snprintf(s0, max_strlen, "BUFFER0: %s\n", time_str);
-    snprintf(s1, max_strlen, "BUFFER1: %s\n", time_str);
+    snprintf(s0, max_strlen, "BUFFER0 BROADCASTS: %s\n", time_str);
+    snprintf(s1, max_strlen, "BUFFER1 BROADCASTS: %s\n", time_str);
 
     printf("s0 strlen%lu\n", strlen(s0));
     socomm_broadcast_handler_post(bh0, (void *)s0, strlen(s0));
@@ -31,8 +31,8 @@ int main(void)
 
     int rc0, rc1;
     do {
-      socomm_string *buf;
-      rc0 = socomm_broadcast_handler_poll(bh0, &buf);
+      socomm_string *buf = NULL;
+      rc0                = socomm_broadcast_handler_poll(bh0, &buf);
 
       assert(rc0 != -1 || errno == EAGAIN);
 
@@ -50,6 +50,9 @@ int main(void)
 
       printf("sleep 50\n");
       usleep(50);
+
+      socomm_string_destroy(&buf);
+
     } while (!rc0 && !rc1);
 
     usleep(2.5e5);

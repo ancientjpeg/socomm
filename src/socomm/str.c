@@ -40,7 +40,7 @@ socomm_string *socomm_string_create_data(const char *data, size_t size)
   socomm_string *s = socomm_string_create_size(size);
 
   if (size) {
-    memcpy(s, data, size);
+    memcpy(s->data, data, size);
   }
 
   return s;
