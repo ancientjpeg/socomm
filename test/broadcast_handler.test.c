@@ -1,7 +1,10 @@
 //  Hello World server
 
+#include "socomm/broadcast_handler.h"
 #include <assert.h>
-#include <socomm/socomm.h>
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -16,7 +19,8 @@ int poll_handler(socomm_broadcast_handler *bh, int idx, int timeout_ms)
   socomm_string *str = NULL;
   int rc = socomm_broadcast_handler_poll_blocking(bh, &str, timeout_ms);
   if (rc >= 0) {
-    debug_printf("Handler %d received message: %s\n", idx,
+    debug_printf("Handler %d received message: %s\n",
+                 idx,
                  (const char *)socomm_string_data(str));
   }
   socomm_string_destroy(&str);

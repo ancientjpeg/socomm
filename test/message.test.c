@@ -1,4 +1,6 @@
-#include "socomm/socomm.h"
+#include "socomm/header.h"
+#include "socomm/uuid/uuid.h"
+#include <string.h>
 
 int main()
 {
