@@ -78,7 +78,8 @@ socomm_message *socomm_message_create(socomm_header header,
 
   socomm_message *message = malloc(sizeof(socomm_message));
   message->header         = header;
-  memcpy(message->message_type, message_type, SOCOMM_MESSAGE_TYPE_MAX_BYTES);
+  memset(message->message_type, 0, SOCOMM_MESSAGE_TYPE_MAX_BYTES);
+  memcpy(message->message_type, message_type, strlen(message_type));
 
   if (message_data == NULL || message_data_size == 0) {
     message->data = (uint64_t)NULL;
@@ -128,7 +129,7 @@ const size_t socomm_message_data_size(socomm_message *message)
 /*******************    SERIALIZATION / DESERIALIZATION   *********************/
 /******************************************************************************/
 
-zmq_msg_t serialize_message(socomm_message *msg)
+zmq_msg_t socomm_serialize_message(socomm_message *msg)
 {
 
   const int   header_size = sizeof(socomm_header);
@@ -148,19 +149,24 @@ zmq_msg_t serialize_message(socomm_message *msg)
   int       zmq_msg_size        = data_offset + msg_data_size;
 
   zmq_msg_init_size(&zmq_msg, zmq_msg_size);
-  void *zmq_msg_data_ptr = zmq_msg_data(&zmq_msg);
+  void    *zmq_msg_data_ptr = zmq_msg_data(&zmq_msg);
 
-  memcpy(zmq_msg_data_ptr, msg, header_size);
-  memcpy(zmq_msg_data_ptr,
-         msg + message_type_offset,
+  uint8_t *zp               = (uint8_t *)zmq_msg_data_ptr;
+  uint8_t *mp               = (uint8_t *)msg;
+
+  memcpy(zp, mp, header_size);
+  memcpy(zp + message_type_offset,
+         mp + message_type_offset,
          SOCOMM_MESSAGE_TYPE_MAX_BYTES);
-  memcpy(zmq_msg_data_ptr, msg + data_size_offset, sizeof(uint64_t));
-  memcpy(zmq_msg_data_ptr, msg + data_offset, msg_data_size);
+  memcpy(zp + data_size_offset, mp + data_size_offset, sizeof(uint64_t));
+  if (msg_data_size > 0) {
+    memcpy(zp + data_offset, *(void **)(mp + data_offset), msg_data_size);
+  }
 
   return zmq_msg;
 }
 
-socomm_message *deserialize_message(zmq_msg_t *msg)
+socomm_message *socomm_deserialize_message(zmq_msg_t *msg)
 {
   const void  *data = zmq_msg_data(msg);
   const size_t size = zmq_msg_size(msg);
@@ -177,7 +183,8 @@ socomm_message *deserialize_message(zmq_msg_t *msg)
       = *(uint64_t *)(data + offsetof(socomm_message, data_size));
   const void *data_ptr = (void *)(data + offsetof(socomm_message, data));
 
-  if (memcmp(header.preamble, "SCM", 3)) {
+  if (memcmp((const char *)header.preamble, "SCM", 3)
+      || header.version != SOCOMM_HEADER_VERSION) {
     assert(false);
     return NULL;
   }

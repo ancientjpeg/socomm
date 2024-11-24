@@ -17,12 +17,12 @@
  * @return `zmq_msg_t` containing the serialized `socomm_message`. This
  * message will be created by copy via `zmq_msg_init_buffer`.
  */
-zmq_msg_t serialize_message(socomm_message *msg);
+zmq_msg_t socomm_serialize_message(socomm_message *msg);
 
 /**
  * @brief Deserialize a `zmq_msg_t` into a `socomm_header`..
  * @note Will call `zmq_msg_close` on `msg`.
  */
-socomm_message *deserialize_message(zmq_msg_t *msg);
+socomm_message *socomm_deserialize_message(zmq_msg_t *msg);
 
 #endif
