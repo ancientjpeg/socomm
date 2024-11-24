@@ -68,10 +68,11 @@ typedef struct socomm_message_t socomm_message;
  * @return Pointer to the newly allocated `socomm_message`, or `NULL` if
  * creation failed.
  */
-socomm_message      *socomm_message_create(socomm_header header,
-                                           const char   *message_type,
-                                           const void   *message_data,
-                                           size_t        message_data_size);
+socomm_message *socomm_message_create(socomm_header header,
+                                      const char   *message_type,
+                                      const void   *message_data,
+                                      size_t        message_data_size);
+/** @todo add creation method that takes ownership of passed data */
 
 void                 socomm_message_destroy(socomm_message **message);
 
