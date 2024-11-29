@@ -48,7 +48,9 @@ void test_serde()
                                                   test_data,
                                                   sizeof(test_data));
 
-  zmq_msg_t       zmq_msg_out = socomm_serialize_message(msg_out);
+  zmq_msg_t       zmq_msg_out;
+  int serialize_rc = socomm_serialize_message(msg_out, &zmq_msg_out);
+  assert(serialize_rc == 0);
   assert(zmq_msg_size(&zmq_msg_out)
          >= (sizeof(socomm_header) + sizeof(uint64_t)));
   assert(memcmp((char *)socomm_message_data(msg_out),

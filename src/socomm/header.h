@@ -63,8 +63,8 @@ typedef struct socomm_message_t socomm_message;
  *
  * @param header
  * @param message_type One of the values in SOCOMM_MESSAGE_TYPES.
- * @param message_data Pointer to data.
- * @param message_data_size Size of the input data.
+ * @param message_data Pointer to data. May be `NULL`.
+ * @param message_data_size Size of the input data. Pass zero if data is `NULL`.
  * @return Pointer to the newly allocated `socomm_message`, or `NULL` if
  * creation failed.
  */

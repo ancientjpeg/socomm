@@ -13,6 +13,28 @@ int handler_post_time(socomm_broadcast_handler *bh,
                       socomm_header             header,
                       int                       idx)
 {
+#define max_strlen 64
+  char            time_str[max_strlen]    = {};
+  char            message_str[max_strlen] = {};
+
+  struct timespec ts;
+  timespec_get(&ts, TIME_UTC);
+  int us = ts.tv_nsec / 1e03;
+
+  strftime(time_str, max_strlen, "%H:%M:%S", gmtime(&ts.tv_sec));
+
+  snprintf(message_str,
+           max_strlen,
+           "Handler %d broadcasts at time: %s:%07d\n",
+           idx,
+           time_str,
+           us);
+
+  socomm_message *msg = socomm_message_create(header,
+                                              SOCOMM_MESSAGE_TYPES[0],
+                                              message_str,
+                                              strlen(message_str));
+  return socomm_broadcast_handler_post(bh, msg, strlen(message_str));
 }
 
 int poll_handler(socomm_broadcast_handler *bh, int idx, int timeout_ms)
@@ -40,25 +62,12 @@ int main(void)
   for (int i = 0; i < 10; ++i) {
 
     debug_printf("ITERATION %d:\n", i);
-#define max_strlen 64
-    char            time_str[max_strlen] = {};
-    char            s0[max_strlen]       = {};
-    char            s1[max_strlen]       = {};
-
-    struct timespec ts;
-    timespec_get(&ts, TIME_UTC);
-    int us = ts.tv_nsec / 1e03;
-
-    strftime(time_str, max_strlen, "%H:%M:%S", gmtime(&ts.tv_sec));
 
     socomm_header header0 = get_test_header();
     socomm_header header1 = get_test_header();
 
-    snprintf(s0, max_strlen, "Handler0 broadcasts: %s:%07d\n", time_str, us);
-    socomm_broadcast_handler_post(bh0, (void *)s0, strlen(s0));
-
-    snprintf(s1, max_strlen, "Handler1 broadcasts: %s:%07d\n", time_str, us);
-    socomm_broadcast_handler_post(bh1, (void *)s1, strlen(s1));
+    handler_post_time(bh0, header0, 0);
+    handler_post_time(bh1, header1, 1);
 
     int timeout = 1;
     assert(poll_handler(bh0, 0, timeout) >= 0);

@@ -60,19 +60,19 @@ void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh)
   *bh = NULL;
 }
 
-void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
-                                   void                     *data,
-                                   size_t                    size)
+int socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
+                                  socomm_message           *message,
+                                  size_t                    size)
 {
 
-  void *msg_data = malloc(size);
-  memcpy(msg_data, data, size);
   zmq_msg_t out_msg;
-  zmq_msg_init_buffer(&out_msg, data, size);
-  zmq_msg_set_group(&out_msg, bh->group_name);
+  int       serialize_rc = socomm_serialize_message(message, &out_msg);
 
-  int rc = zmq_msg_send(&out_msg, bh->radio_socket_, 0);
-  socomm_handle_errno(rc);
+  if (serialize_rc != 0) {
+    return serialize_rc;
+  }
+
+  return zmq_msg_send(&out_msg, bh->radio_socket_, 0);
 }
 
 socomm_message *socomm_broadcast_handler_poll(socomm_broadcast_handler *bh)

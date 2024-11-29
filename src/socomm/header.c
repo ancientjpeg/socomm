@@ -134,19 +134,19 @@ const size_t socomm_message_data_size(socomm_message *message)
 /******************************************************************************/
 /*******************    SERIALIZATION / DESERIALIZATION   *********************/
 /******************************************************************************/
-
-zmq_msg_t socomm_serialize_message(socomm_message *msg)
+int socomm_serialize_message(socomm_message *msg, zmq_msg_t *out_msg)
 {
 
-  const int   header_size = sizeof(socomm_header);
-  zmq_msg_t   zmq_msg;
+  const int   header_size   = sizeof(socomm_header);
 
   const void *msg_data      = socomm_message_data(msg);
   uint64_t    msg_data_size = socomm_message_data_size(msg);
 
+  zmq_msg_close(out_msg);
+
   if (msg_data == NULL) {
     assert(false);
-    return zmq_msg;
+    return -1;
   }
 
   const int message_type_offset = offsetof(socomm_message, message_type);
@@ -154,8 +154,8 @@ zmq_msg_t socomm_serialize_message(socomm_message *msg)
   const int data_offset         = offsetof(socomm_message, data);
   int       zmq_msg_size        = data_offset + msg_data_size;
 
-  zmq_msg_init_size(&zmq_msg, zmq_msg_size);
-  void    *zmq_msg_data_ptr = zmq_msg_data(&zmq_msg);
+  zmq_msg_init_size(out_msg, zmq_msg_size);
+  void    *zmq_msg_data_ptr = zmq_msg_data(out_msg);
 
   uint8_t *zp               = (uint8_t *)zmq_msg_data_ptr;
   uint8_t *mp               = (uint8_t *)msg;
@@ -169,7 +169,7 @@ zmq_msg_t socomm_serialize_message(socomm_message *msg)
     memcpy(zp + data_offset, *(void **)(mp + data_offset), msg_data_size);
   }
 
-  return zmq_msg;
+  return 0;
 }
 
 socomm_message *socomm_deserialize_message(zmq_msg_t *msg)

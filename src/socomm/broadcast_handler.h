@@ -20,9 +20,17 @@ socomm_broadcast_handler_create(const char *group_name);
 
 void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh);
 
-void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
-                                   void                     *data,
-                                   size_t                    size);
+/**
+ * @brief Posts a message to all broadcast handlers in the same group.
+ *
+ * @param bh
+ * @param message The message to send.
+ * @param size
+ * @return 0 on success or -1 on an error with `ernno` set.
+ */
+int socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
+                                  socomm_message           *message,
+                                  size_t                    size);
 
 /**
  * @brief Non-blocking poll that retreieves a single message from the queue.
