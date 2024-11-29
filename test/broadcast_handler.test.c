@@ -1,6 +1,7 @@
 //  Hello World server
 
 #include "socomm/broadcast_handler.h"
+#include "test_helpers.h"
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
@@ -8,23 +9,25 @@
 #include <time.h>
 #include <unistd.h>
 
-#ifndef SOCOMM_VERBOSE_TESTS
-#define debug_printf(...)
-#else
-#define debug_printf printf
-#endif
+int handler_post_time(socomm_broadcast_handler *bh,
+                      socomm_header             header,
+                      int                       idx)
+{
+}
 
 int poll_handler(socomm_broadcast_handler *bh, int idx, int timeout_ms)
 {
-  socomm_string *str = NULL;
-  int rc = socomm_broadcast_handler_poll_blocking(bh, &str, timeout_ms);
-  if (rc >= 0) {
-    debug_printf("Handler %d received message: %s\n",
-                 idx,
-                 (const char *)socomm_string_data(str));
+  socomm_message *message = NULL;
+  message = socomm_broadcast_handler_poll_blocking(bh, timeout_ms);
+  if (message != NULL) {
+
+    const char *data = socomm_message_data_size(message) == 0
+                           ? socomm_message_data(message)
+                           : "Message empty.";
+    debug_printf("Handler %d received message: %s\n", idx, data);
   }
-  socomm_string_destroy(&str);
-  return rc;
+  socomm_message_destroy(&message);
+  return message != NULL ? 0 : 1;
 }
 
 int main(void)
@@ -47,6 +50,9 @@ int main(void)
     int us = ts.tv_nsec / 1e03;
 
     strftime(time_str, max_strlen, "%H:%M:%S", gmtime(&ts.tv_sec));
+
+    socomm_header header0 = get_test_header();
+    socomm_header header1 = get_test_header();
 
     snprintf(s0, max_strlen, "Handler0 broadcasts: %s:%07d\n", time_str, us);
     socomm_broadcast_handler_post(bh0, (void *)s0, strlen(s0));

@@ -31,6 +31,9 @@ static_assert(sizeof(socomm_message) == predicted_msg_size,
 static_assert(sizeof(uintptr_t) <= sizeof(uint64_t),
               "Systems greater than 64 bit not supported.");
 
+static_assert(offsetof(socomm_message, header) == 0,
+              "Header should be first component of `socomm_message`.");
+
 static inline bool socomm_valid_command(const char *message_type)
 {
 

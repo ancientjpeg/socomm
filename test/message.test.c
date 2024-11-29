@@ -1,17 +1,8 @@
 #include "socomm/header.h"
 #include "socomm/header_serde.h"
 #include "socomm/uuid/uuid.h"
+#include "test_helpers.h"
 #include <string.h>
-
-socomm_header get_test_header()
-{
-  uuid4_state_t uuid_state;
-  uuid4_t       uuid;
-  uuid4_seed(&uuid_state);
-  uuid4_gen(&uuid_state, &uuid);
-
-  return socomm_header_init(9350, uuid);
-}
 
 void test_messages()
 {
