@@ -61,8 +61,7 @@ void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh)
 }
 
 int socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
-                                  socomm_message           *message,
-                                  size_t                    size)
+                                  socomm_message           *message)
 {
 
   zmq_msg_t out_msg;
