@@ -23,7 +23,8 @@ foreach(test_file ${TEST_FILES})
     )
 
     if (${SOCOMM_VERBOSE_TESTS})
-        target_compile_definitions(socomm
+        target_compile_definitions(${test_target_name}
+            PRIVATE
             SOCOMM_VERBOSE_TESTS=1
         )
     endif()
