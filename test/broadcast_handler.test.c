@@ -34,7 +34,9 @@ int handler_post_time(socomm_broadcast_handler *bh,
                                               SOCOMM_MESSAGE_TYPES[0],
                                               message_str,
                                               strlen(message_str));
-  return socomm_broadcast_handler_post(bh, msg, strlen(message_str));
+
+  int bytes_sent = socomm_broadcast_handler_post(bh, msg, strlen(message_str));
+  return bytes_sent;
 }
 
 int poll_handler(socomm_broadcast_handler *bh, int idx, int timeout_ms)
@@ -43,38 +45,42 @@ int poll_handler(socomm_broadcast_handler *bh, int idx, int timeout_ms)
   message = socomm_broadcast_handler_poll_blocking(bh, timeout_ms);
   if (message != NULL) {
 
-    const char *data = socomm_message_data_size(message) == 0
+    const char *data = socomm_message_data_size(message) != 0
                            ? socomm_message_data(message)
                            : "Message empty.";
     debug_printf("Handler %d received message: %s\n", idx, data);
   }
+
+  int rc = message != NULL ? 0 : -1;
   socomm_message_destroy(&message);
-  return message != NULL ? 0 : 1;
+  return rc;
 }
 
 int main(void)
 {
   const char *gname = "test_gname";
   debug_printf("Begin Test\n");
-  socomm_broadcast_handler *bh0 = socomm_broadcast_handler_create(gname);
-  socomm_broadcast_handler *bh1 = socomm_broadcast_handler_create(gname);
+  socomm_broadcast_handler *bh0     = socomm_broadcast_handler_create(gname);
+  socomm_broadcast_handler *bh1     = socomm_broadcast_handler_create(gname);
+
+  socomm_header             header0 = get_test_header();
+  socomm_header             header1 = get_test_header();
 
   for (int i = 0; i < 10; ++i) {
 
     debug_printf("ITERATION %d:\n", i);
 
-    socomm_header header0 = get_test_header();
-    socomm_header header1 = get_test_header();
-
-    handler_post_time(bh0, header0, 0);
-    handler_post_time(bh1, header1, 1);
+    int send_code_0 = handler_post_time(bh0, header0, 0);
+    int send_code_1 = handler_post_time(bh1, header1, 1);
+    assert(send_code_0 >= 0);
+    assert(send_code_1 >= 0);
 
     int timeout = 1;
-    assert(poll_handler(bh0, 0, timeout) >= 0);
-    assert(poll_handler(bh0, 0, timeout) >= 0);
+    assert(poll_handler(bh0, 0, timeout) == 0);
+    assert(poll_handler(bh0, 0, timeout) == 0);
     assert(poll_handler(bh0, 0, 0) == -1 && errno == EAGAIN);
-    assert(poll_handler(bh1, 1, timeout) >= 0);
-    assert(poll_handler(bh1, 1, timeout) >= 0);
+    assert(poll_handler(bh1, 1, timeout) == 0);
+    assert(poll_handler(bh1, 1, timeout) == 0);
     assert(poll_handler(bh1, 1, 0) == -1 && errno == EAGAIN);
   }
 

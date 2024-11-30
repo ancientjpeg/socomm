@@ -72,6 +72,12 @@ int socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
     return serialize_rc;
   }
 
+  int set_group_rc = zmq_msg_set_group(&out_msg, bh->group_name);
+
+  if (set_group_rc != 0) {
+    return -1;
+  }
+
   return zmq_msg_send(&out_msg, bh->radio_socket_, 0);
 }
 
@@ -96,17 +102,13 @@ socomm_broadcast_handler_poll_blocking(socomm_broadcast_handler *bh,
   }
 
   int             recv_code = zmq_msg_recv(&recv_msg, bh->dish_socket_, flags);
-
   socomm_message *message   = NULL;
 
   if (recv_code == -1) {
     goto cleanup;
   }
 
-  void  *msg_data = zmq_msg_data(&recv_msg);
-  size_t msg_size = zmq_msg_size(&recv_msg);
-
-  message         = socomm_deserialize_message(&recv_msg);
+  message = socomm_deserialize_message(&recv_msg);
 
 cleanup:
   zmq_msg_close(&recv_msg);

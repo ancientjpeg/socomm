@@ -10,7 +10,6 @@
 
 #include "socomm/header.h"
 
-/** @todo put this in a test helpers file */
 #ifndef SOCOMM_VERBOSE_TESTS
 #define debug_printf(...)
 #else

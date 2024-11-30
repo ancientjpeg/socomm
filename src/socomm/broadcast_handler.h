@@ -26,7 +26,7 @@ void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh);
  * @param bh
  * @param message The message to send.
  * @param size
- * @return 0 on success or -1 on an error with `ernno` set.
+ * @return Number of bytes posted on success or -1 on an error with `ernno` set.
  */
 int socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
                                   socomm_message           *message,
