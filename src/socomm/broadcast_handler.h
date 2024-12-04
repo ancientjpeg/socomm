@@ -9,16 +9,14 @@
 #define SOCOMM_BROADCAST_HANDLER_H_
 
 #include "header.h"
-#include "str.h"
 #include <stdbool.h>
 #include <stddef.h>
 
 typedef struct socomm_broadcast_handler_t socomm_broadcast_handler;
 
-socomm_broadcast_handler      *
-socomm_broadcast_handler_create(const char *group_name);
+socomm_broadcast_handler *socomm_broadcast_handler_create(socomm_header header);
 
-void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh);
+void            socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh);
 
 /**
  * @brief Posts a message to all broadcast handlers in the same group.
@@ -27,8 +25,8 @@ void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh);
  * @param message The message to send.
  * @return Number of bytes posted on success or -1 on an error with `ernno` set.
  */
-int socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
-                                  socomm_message           *message);
+int             socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
+                                              socomm_message           *message);
 
 /**
  * @brief Non-blocking poll that retreieves a single message from the queue.

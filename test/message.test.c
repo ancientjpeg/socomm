@@ -1,6 +1,5 @@
 #include "socomm/header.h"
 #include "socomm/header_serde.h"
-#include "socomm/uuid/uuid.h"
 #include "test_helpers.h"
 #include <string.h>
 
@@ -54,7 +53,7 @@ void test_serde()
   assert(zmq_msg_size(&zmq_msg_out)
          >= (sizeof(socomm_header) + sizeof(uint64_t)));
   assert(memcmp((char *)socomm_message_data(msg_out),
-                ((char *)zmq_msg_data(&zmq_msg_out) + 40),
+                ((char *)zmq_msg_data(&zmq_msg_out) + 56),
                 socomm_message_data_size(msg_out))
          == 0);
 

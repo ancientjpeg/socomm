@@ -11,6 +11,14 @@
 
 #define max_strlen 64
 
+void log_message(int idx, socomm_message *message)
+{
+  const char  *data = socomm_message_data(message);
+  const size_t size = socomm_message_data_size(message);
+
+  printf("Handler %d receives message: %s\n", idx, data);
+}
+
 void gen_message(char *message_str, int handler_idx)
 {
 
@@ -42,6 +50,7 @@ int handler_post_string(socomm_broadcast_handler *bh,
                                               strlen(message_str));
 
   int             bytes_sent = socomm_broadcast_handler_post(bh, msg);
+  socomm_message_destroy(&msg);
   return bytes_sent;
 }
 
@@ -53,10 +62,7 @@ poll_handler(socomm_broadcast_handler *bh, int idx, int timeout_ms)
 
 #ifdef SOCOMM_VERBOSE_TESTS
   if (message != NULL) {
-    const char *data = socomm_message_data_size(message) != 0
-                           ? socomm_message_data(message)
-                           : "Message empty.";
-    debug_printf("Handler %d received message: %s\n", idx, data);
+    log_message(idx, message);
   }
 #endif
 
@@ -65,13 +71,11 @@ poll_handler(socomm_broadcast_handler *bh, int idx, int timeout_ms)
 
 int main(void)
 {
-  const char *gname = "test_gname";
-  debug_printf("Begin Test\n");
-  socomm_broadcast_handler *bh0     = socomm_broadcast_handler_create(gname);
-  socomm_broadcast_handler *bh1     = socomm_broadcast_handler_create(gname);
-
   socomm_header             header0 = get_test_header();
   socomm_header             header1 = get_test_header();
+
+  socomm_broadcast_handler *bh0     = socomm_broadcast_handler_create(header0);
+  socomm_broadcast_handler *bh1     = socomm_broadcast_handler_create(header1);
 
   char                      message_str_0[max_strlen] = {};
   char                      message_str_1[max_strlen] = {};
@@ -90,14 +94,20 @@ int main(void)
     assert(send_code_0 >= 0);
     assert(send_code_1 >= 0);
 
-    int             timeout    = 1;
-    socomm_message *bh0_recv_0 = poll_handler(bh0, 1, timeout);
-    socomm_message *bh0_recv_1 = poll_handler(bh0, 1, timeout);
+    int             timeout    = 5;
+    socomm_message *bh0_recv_0 = poll_handler(bh0, 0, timeout);
+    socomm_message *bh0_recv_1 = poll_handler(bh0, 0, timeout);
+
+    assert(bh0_recv_0 != NULL);
+    assert(bh0_recv_1 != NULL);
 
     assert(poll_handler(bh0, 0, 0) == NULL && errno == EAGAIN);
 
     socomm_message *bh1_recv_0 = poll_handler(bh1, 1, timeout);
     socomm_message *bh1_recv_1 = poll_handler(bh1, 1, timeout);
+
+    assert(bh1_recv_0 != NULL);
+    assert(bh1_recv_1 != NULL);
 
     assert(poll_handler(bh1, 1, 0) == NULL && errno == EAGAIN);
   }

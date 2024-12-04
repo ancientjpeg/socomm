@@ -11,19 +11,22 @@
 #include <string.h>
 
 #define SOCOMM_MESSAGE_TYPE_MAX_BYTES 8
+#define SOCOMM_MAX_GROUP_NAME_BYTES (SOCOMM_MAX_GROUP_NAME_LENGTH + 1)
+
 typedef struct socomm_message_t {
   /* All messages must contain a header. */
   socomm_header header;
 
-  /* use message_t to discern intent */
-  uint8_t  message_type[SOCOMM_MESSAGE_TYPE_MAX_BYTES];
+  /* use message type to discern intent */
+  char          message_type[SOCOMM_MESSAGE_TYPE_MAX_BYTES];
 
-  uint64_t data_size;
-  uint64_t data; /* to be cast to a void* */
+  uint64_t      data_size;
+  uint64_t      data; /* to be cast to a void* */
 } socomm_message;
 
-static const int predicted_msg_size = (sizeof(socomm_header) + sizeof(void *)
-                                       + sizeof(size_t) + 8 * sizeof(uint8_t));
+static const int predicted_msg_size
+    = (sizeof(socomm_header) + sizeof(void *) + sizeof(size_t)
+       + SOCOMM_MESSAGE_TYPE_MAX_BYTES * sizeof(uint8_t));
 
 static_assert(sizeof(socomm_message) == predicted_msg_size,
               "Unexpected socomm header sizing");
@@ -58,8 +61,13 @@ static inline bool socomm_valid_command(const char *message_type)
   return false;
 }
 
-socomm_header socomm_header_init(uint16_t port, uuid4_t uuid)
+socomm_header
+socomm_header_init(uint16_t port, uuid4_t node_uuid, const char *group_name)
 {
+
+  const int group_name_len = strlen(group_name);
+  assert(group_name_len <= SOCOMM_MAX_GROUP_NAME_LENGTH);
+
   socomm_header header;
   header.preamble[0] = 'S';
   header.preamble[1] = 'C';
@@ -67,7 +75,10 @@ socomm_header socomm_header_init(uint16_t port, uuid4_t uuid)
   header.version     = SOCOMM_HEADER_VERSION;
 
   header.port        = port;
-  header.uuid        = uuid;
+  header.uuid        = node_uuid;
+
+  memset(header.group_name, '\0', SOCOMM_MAX_GROUP_NAME_BYTES);
+  memcpy(header.group_name, group_name, group_name_len);
 
   return header;
 }
@@ -183,20 +194,16 @@ socomm_message *socomm_deserialize_message(zmq_msg_t *msg)
   }
 
   socomm_header header = *(socomm_header *)data;
-  uint8_t      *message_type
-      = (uint8_t *)(data + offsetof(socomm_message, message_type));
+  char *message_type = (char *)(data + offsetof(socomm_message, message_type));
   uint64_t data_size
       = *(uint64_t *)(data + offsetof(socomm_message, data_size));
   const void *data_ptr = (void *)(data + offsetof(socomm_message, data));
 
-  if (memcmp((const char *)header.preamble, "SCM", 3)
+  if (memcmp(header.preamble, "SCM", 3)
       || header.version != SOCOMM_HEADER_VERSION) {
     assert(false);
     return NULL;
   }
 
-  return socomm_message_create(header,
-                               (const char *)message_type,
-                               data_ptr,
-                               data_size);
+  return socomm_message_create(header, message_type, data_ptr, data_size);
 }

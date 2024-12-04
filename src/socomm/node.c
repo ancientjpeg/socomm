@@ -7,6 +7,7 @@
 
 #include "socomm/node.h"
 #include "socomm/broadcast_handler.h"
+#include "uuid/uuid.h"
 #include <stdlib.h>
 
 struct node_metadata {
@@ -14,15 +15,24 @@ struct node_metadata {
 };
 
 typedef struct socomm_node_t {
+  socomm_header             header;
   socomm_broadcast_handler *broadcast_handler_;
   void                     *socket_;
 } socomm_node;
 
-socomm_node *socomm_node_create()
+socomm_node *socomm_node_create(const char *group_name)
 {
-  const char  *gname       = "default_gname";
-  socomm_node *node        = malloc(sizeof(socomm_node));
-  node->broadcast_handler_ = socomm_broadcast_handler_create(gname);
+  const char   *gname = "default_gname";
+  socomm_node  *node  = malloc(sizeof(socomm_node));
+
+  uuid4_state_t uuid_state;
+  uuid4_t       node_uuid;
+  uuid4_seed(&uuid_state);
+  uuid4_gen(&uuid_state, &node_uuid);
+
+  const uint16_t port      = 9325;
+  node->header             = socomm_header_init(port, node_uuid, group_name);
+  node->broadcast_handler_ = socomm_broadcast_handler_create(node->header);
 
   return node;
 }
