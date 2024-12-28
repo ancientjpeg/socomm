@@ -82,6 +82,9 @@ socomm_message                 *socomm_message_create(socomm_header header,
                                                       size_t        message_data_size);
 /** @todo add creation method that takes ownership of passed data */
 
+/**
+ * @brief Destroys message. Will set `*message` to `NULL`.
+ */
 void                 socomm_message_destroy(socomm_message **message);
 
 const socomm_header *socomm_message_header(socomm_message *message);
