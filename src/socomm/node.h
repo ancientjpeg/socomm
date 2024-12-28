@@ -12,7 +12,7 @@
 
 typedef struct socomm_node_t socomm_node;
 
-socomm_node                 *socomm_node_create(const char *group_name);
-void                         socomm_node_destroy(socomm_node *node);
+socomm_node *socomm_node_create(const char *group_name, uint16_t port);
+void         socomm_node_destroy(socomm_node **node);
 
 #endif
