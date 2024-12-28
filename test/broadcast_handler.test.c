@@ -82,7 +82,12 @@ int main(void)
 
   for (int i = 0; i < 10; ++i) {
 
+    /** @todo implement broadcast handler ignoring self */
     debug_printf("ITERATION %d:\n", i);
+
+    /* each iteration begins with empty queue */
+    assert(poll_handler(bh0, 0, 0) == NULL && errno == EAGAIN);
+    assert(poll_handler(bh1, 1, 0) == NULL && errno == EAGAIN);
 
     gen_message(message_str_0, 0);
     gen_message(message_str_1, 1);
@@ -96,18 +101,14 @@ int main(void)
 
     int             timeout    = 5;
     socomm_message *bh0_recv_0 = poll_handler(bh0, 0, timeout);
-    socomm_message *bh0_recv_1 = poll_handler(bh0, 0, timeout);
 
     assert(bh0_recv_0 != NULL);
-    assert(bh0_recv_1 != NULL);
 
     assert(poll_handler(bh0, 0, 0) == NULL && errno == EAGAIN);
 
     socomm_message *bh1_recv_0 = poll_handler(bh1, 1, timeout);
-    socomm_message *bh1_recv_1 = poll_handler(bh1, 1, timeout);
 
     assert(bh1_recv_0 != NULL);
-    assert(bh1_recv_1 != NULL);
 
     assert(poll_handler(bh1, 1, 0) == NULL && errno == EAGAIN);
   }
