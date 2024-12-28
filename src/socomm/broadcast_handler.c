@@ -106,7 +106,14 @@ socomm_broadcast_handler_poll_blocking(socomm_broadcast_handler *bh,
     goto cleanup;
   }
 
-  message = socomm_deserialize_message(&recv_msg);
+  message                     = socomm_deserialize_message(&recv_msg);
+
+  const socomm_header *header = socomm_message_header(message);
+  if (memcmp(&header->uuid, &bh->header.uuid, sizeof(uuid4_t)) == 0) {
+    socomm_message_destroy(&message);
+    errno = EAGAIN;
+    goto cleanup;
+  }
 
 cleanup:
   zmq_msg_close(&recv_msg);
