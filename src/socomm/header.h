@@ -63,8 +63,6 @@ static_assert(CHAR_BIT == 8, "Nonstandard byte sizes not (yet) supported.");
 socomm_header
 socomm_header_init(uint16_t port, uuid4_t node_uuid, const char *group_name);
 
-bool socomm_header_equal(const socomm_header *a, const socomm_header *b);
-
 typedef struct socomm_message_t socomm_message;
 
 /**
