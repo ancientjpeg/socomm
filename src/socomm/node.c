@@ -22,8 +22,7 @@ typedef struct socomm_node_t {
 
 socomm_node *socomm_node_create(const char *group_name)
 {
-  const char   *gname = "default_gname";
-  socomm_node  *node  = malloc(sizeof(socomm_node));
+  socomm_node  *node = malloc(sizeof(socomm_node));
 
   uuid4_state_t uuid_state;
   uuid4_t       node_uuid;
