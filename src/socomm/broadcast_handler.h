@@ -40,6 +40,9 @@ socomm_message *socomm_broadcast_handler_poll(socomm_broadcast_handler *bh);
 /**
  * @brief Poll this handler for messages from other broadcasters. Outputs
  * a single message into `*str_ptr`.
+ * @details `errno` values on error shall be those described by `zmq_msg_rcv`,
+ * with the addition of `EBADMSG` indicating a failure to parse the zmq message
+ * into a socomm message.
  *
  * @param bh
  * @param str_ptr

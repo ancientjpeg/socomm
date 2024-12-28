@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <zmq.h>
 
 typedef struct socomm_broadcast_handler_t {
@@ -89,38 +90,56 @@ socomm_broadcast_handler_poll_blocking(socomm_broadcast_handler *bh,
 {
   socomm_message *message = NULL;
 
-  bool            timeout = timeout_ms > 0;
-  int             flags   = timeout ? 0 : ZMQ_DONTWAIT;
-
   /* https://gist.github.com/Mystfit/6c015257b637ae31bcb63130da67627c */
   zmq_msg_t       recv_msg;
   zmq_msg_init(&recv_msg);
 
-  if (timeout) {
-    zmq_setsockopt(bh->dish_socket_, ZMQ_RCVTIMEO, &timeout_ms, sizeof(int));
-  }
+  const bool   async        = timeout_ms == 0;
+  bool         try_again    = false;
 
-  int recv_code = zmq_msg_recv(&recv_msg, bh->dish_socket_, flags);
+  const double ms_per_clock = 1e03 / CLOCKS_PER_SEC;
 
-  if (recv_code == -1) {
-    goto cleanup;
-  }
+  clock_t      start        = clock();
 
-  message                     = socomm_deserialize_message(&recv_msg);
+  do {
 
-  const socomm_header *header = socomm_message_header(message);
-  if (memcmp(&header->uuid, &bh->header.uuid, sizeof(uuid4_t)) == 0) {
+    try_again     = false;
+
+    int recv_code = zmq_msg_recv(&recv_msg, bh->dish_socket_, ZMQ_DONTWAIT);
+
+    if (recv_code == -1) {
+      if (errno != EAGAIN) {
+        break;
+      }
+      else {
+        continue;
+      }
+    }
+
+    message                     = socomm_deserialize_message(&recv_msg);
+
+    const socomm_header *header = socomm_message_header(message);
+
+    if (header == NULL) {
+      errno = EBADMSG;
+      break;
+    }
+
+    const bool from_self
+        = memcmp(&header->uuid, &bh->header.uuid, sizeof(uuid4_t)) == 0;
+
+    if (!from_self) {
+      break;
+    }
+
     socomm_message_destroy(&message);
-    errno = EAGAIN;
-    goto cleanup;
-  }
+    errno     = EAGAIN;
+    try_again = true;
 
-cleanup:
+  } while ((try_again && async)
+           || ((double)(clock() - start) * ms_per_clock) < timeout_ms);
+
   zmq_msg_close(&recv_msg);
-  if (timeout) {
-    const int inf_timeout = -1;
-    zmq_setsockopt(bh->dish_socket_, ZMQ_RCVTIMEO, &inf_timeout, sizeof(int));
-  }
 
   return message;
 }
