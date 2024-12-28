@@ -1,6 +1,7 @@
 add_library(socomm
   broadcast_handler.c
   helpers.c
+  header.c
   node.c
   str.c
   uuid/uuid.c
@@ -14,10 +15,8 @@ target_include_directories(socomm PUBLIC
     ${PARENT_DIR}
 )
 target_include_directories(socomm 
-    PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}
     PUBLIC 
-    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_LIST_DIR}
 )
 
 Include(FetchContent)

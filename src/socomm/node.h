@@ -8,9 +8,11 @@
 #ifndef SOCOMM_NODE_H_
 #define SOCOMM_NODE_H_
 
+#include <stdint.h>
+
 typedef struct socomm_node_t socomm_node;
 
-socomm_node                 *socomm_node_create();
+socomm_node                 *socomm_node_create(const char *group_name);
 void                         socomm_node_destroy(socomm_node *node);
 
 #endif

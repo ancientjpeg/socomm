@@ -6,28 +6,33 @@
  */
 
 #include "broadcast_handler.h"
+#include "header.h"
+#include "header_serde.h"
 #include "helpers.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <zmq.h>
 
 typedef struct socomm_broadcast_handler_t {
-  void *radio_socket_;
-  void *dish_socket_;
+  socomm_header header;
+  void         *radio_socket_;
+  void         *dish_socket_;
 } socomm_broadcast_handler;
 
-const char *addr  = "udp://239.0.0.1:9325";
-const char *gname = "radio_group";
+const char               *addr = "udp://239.0.0.1:9325";
 
-socomm_broadcast_handler *
-socomm_broadcast_handler_create(const char *group_name, size_t group_name_size)
+socomm_broadcast_handler *socomm_broadcast_handler_create(socomm_header header)
 {
-  assert(group_name_size <= 16);
+  const char               *group_name      = (const char *)header.group_name;
+
+  size_t                    group_name_size = strlen(group_name);
 
   //  Connecting using a Multicast address
   socomm_broadcast_handler *bh
       = (socomm_broadcast_handler *)malloc(sizeof(socomm_broadcast_handler));
+  bh->header        = header;
   bh->radio_socket_ = zmq_socket(socomm_get_global_ctx(), ZMQ_RADIO);
   int rc            = zmq_connect(bh->radio_socket_, addr);
   if (rc == -1) {
@@ -42,7 +47,7 @@ socomm_broadcast_handler_create(const char *group_name, size_t group_name_size)
   }
   socomm_handle_errno(rc);
 
-  rc = zmq_join(bh->dish_socket_, gname);
+  rc = zmq_join(bh->dish_socket_, group_name);
   socomm_handle_errno(rc);
 
   return bh;
@@ -54,66 +59,89 @@ void socomm_broadcast_handler_destroy(socomm_broadcast_handler **bh)
   *bh = NULL;
 }
 
-void socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
-                                   void                     *data,
-                                   size_t                    size)
+int socomm_broadcast_handler_post(socomm_broadcast_handler *bh,
+                                  socomm_message           *message)
 {
 
-  void *msg_data = malloc(size);
-  memcpy(msg_data, data, size);
   zmq_msg_t out_msg;
-  zmq_msg_init_data(&out_msg, msg_data, size, socomm_compatible_free, NULL);
-  zmq_msg_set_group(&out_msg, gname);
+  int       serialize_rc = socomm_serialize_message(message, &out_msg);
 
-  int rc = zmq_msg_send(&out_msg, bh->radio_socket_, 0);
-  socomm_handle_errno(rc);
-}
-
-int socomm_broadcast_handler_poll(socomm_broadcast_handler *bh,
-                                  socomm_string           **str_ptr)
-{
-  return socomm_broadcast_handler_poll_blocking(bh, str_ptr, -1);
-}
-
-int socomm_broadcast_handler_poll_blocking(socomm_broadcast_handler *bh,
-                                           socomm_string           **str_ptr,
-                                           int                       timeout_ms)
-{
-  bool timeout = timeout_ms > 0;
-  int  flags   = timeout ? 0 : ZMQ_DONTWAIT;
-
-  socomm_string_destroy(str_ptr);
-
-  /* https://gist.github.com/Mystfit/6c015257b637ae31bcb63130da67627c */
-  zmq_msg_t recv_msg;
-  zmq_msg_init(&recv_msg);
-
-  if (timeout) {
-    zmq_setsockopt(bh->dish_socket_, ZMQ_RCVTIMEO, &timeout_ms, sizeof(int));
+  if (serialize_rc != 0) {
+    return serialize_rc;
   }
 
-  int recv_code = zmq_msg_recv(&recv_msg, bh->dish_socket_, flags);
+  int set_group_rc = zmq_msg_set_group(&out_msg, bh->header.group_name);
 
-  if (recv_code == -1) {
-    *str_ptr = socomm_string_create();
-    zmq_msg_close(&recv_msg);
-
+  if (set_group_rc != 0) {
     return -1;
   }
 
-  void  *msg_data = zmq_msg_data(&recv_msg);
-  size_t msg_size = zmq_msg_size(&recv_msg);
+  return zmq_msg_send(&out_msg, bh->radio_socket_, 0);
+}
 
-  *str_ptr        = socomm_string_create_data(msg_data, msg_size);
+socomm_message *socomm_broadcast_handler_poll(socomm_broadcast_handler *bh)
+{
+  return socomm_broadcast_handler_poll_blocking(bh, 0);
+}
+
+socomm_message *
+socomm_broadcast_handler_poll_blocking(socomm_broadcast_handler *bh,
+                                       int                       timeout_ms)
+{
+  socomm_message *message = NULL;
+
+  /* https://gist.github.com/Mystfit/6c015257b637ae31bcb63130da67627c */
+  zmq_msg_t       recv_msg;
+  zmq_msg_init(&recv_msg);
+
+  const bool   async        = timeout_ms == 0;
+  bool         try_again    = false;
+
+  const double ms_per_clock = 1e03 / CLOCKS_PER_SEC;
+
+  clock_t      start        = clock();
+
+  do {
+
+    try_again     = false;
+
+    int recv_code = zmq_msg_recv(&recv_msg, bh->dish_socket_, ZMQ_DONTWAIT);
+
+    if (recv_code == -1) {
+      if (errno != EAGAIN) {
+        break;
+      }
+      else {
+        continue;
+      }
+    }
+
+    message                     = socomm_deserialize_message(&recv_msg);
+
+    const socomm_header *header = socomm_message_header(message);
+
+    if (header == NULL) {
+      errno = EBADMSG;
+      break;
+    }
+
+    const bool from_self
+        = memcmp(&header->uuid, &bh->header.uuid, sizeof(uuid4_t)) == 0;
+
+    if (!from_self) {
+      break;
+    }
+
+    socomm_message_destroy(&message);
+    errno     = EAGAIN;
+    try_again = true;
+
+  } while ((try_again && async)
+           || ((double)(clock() - start) * ms_per_clock) < timeout_ms);
 
   zmq_msg_close(&recv_msg);
 
-  if (timeout) {
-    int inf_timeout = -1;
-    zmq_setsockopt(bh->dish_socket_, ZMQ_RCVTIMEO, &inf_timeout, sizeof(int));
-  }
-
-  return true;
+  return message;
 }
 
 void socomm_broadcast_handler_disconnect(socomm_broadcast_handler *bh)
