@@ -93,5 +93,17 @@ int socomm_ledger_remove_entry(socomm_ledger_t *ledger, uuid4_t uuid)
     return SOCOMM_DOES_NOT_EXIST;
   }
 
-  assert((entry - ledger->entries) < ledger->len);
+  socomm_ledger_entry_t *end  = ledger->entries + ledger->len;
+
+  socomm_ledger_entry_t *next = entry;
+  for (; ++next != end;) {
+    socomm_ledger_entry_t temp = *entry;
+    *entry                     = *next;
+    *next                      = temp;
+    entry                      = next;
+  }
+
+  --ledger->len;
+
+  return SOCOMM_SUCCESS;
 }
