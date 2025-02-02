@@ -56,17 +56,12 @@ void socomm_ledger_destroy(socomm_ledger_t **ledger)
 socomm_ledger_entry_t *socomm_ledger_get_entry(socomm_ledger_t *ledger,
                                                uuid4_t          uuid)
 {
-  /* ANSI C syntax just for funsies idk */
-  size_t i = 0;
-  for (; i++ < ledger->len;) {
+  for (size_t i = 0; i < ledger->len; ++i) {
     socomm_ledger_entry_t *entry = &ledger->entries[i];
     if (memcmp(&entry->uuid, &uuid, sizeof(uuid4_t)) == 0) {
       return entry;
     }
   }
-
-  /* make sure my funsies don't esplode */
-  assert(i == ledger->len);
 
   return NULL;
 }
@@ -88,18 +83,16 @@ int socomm_ledger_add_entry(socomm_ledger_t *ledger,
   }
 
   if (ledger->len == ledger->cap) {
-    size_t                 new_cap     = ledger->cap * 2;
-    socomm_ledger_entry_t *new_entries = (socomm_ledger_entry_t *)malloc(
-        new_cap * sizeof(socomm_ledger_entry_t));
+    size_t new_cap  = ledger->cap * 2;
 
     ledger->entries = realloc(ledger->entries, new_cap);
+    ledger->cap     = new_cap;
 
     /** @todo: gracefully handle out-of-memory situations ? */
     assert(ledger->entries != NULL);
-
-    free(ledger->entries);
-    ledger->entries = new_entries;
   }
+
+  ledger->entries[ledger->len++] = (socomm_ledger_entry_t){uuid, port};
 
   return SOCOMM_SUCCESS;
 }
