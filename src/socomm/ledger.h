@@ -26,7 +26,9 @@ void                           socomm_ledger_destroy(socomm_ledger_t **ledger);
  * @param uuid
  * @param port
  * @return 0 on success. May return the following standard errnos:
- * - SOCOMM_ALREADY_EXISTS: entry already exists
+ * - SOCOMM_ALREADY_EXISTS: Entry already exists.
+ * - SOCOMM_PORT_IN_USE: An entry is already using this port. May indicate
+ * something has gone wrong with node management.
  */
 int                            socomm_ledger_add_entry(socomm_ledger_t *ledger,
                                                        uuid4_t          uuid,

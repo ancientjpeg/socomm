@@ -80,6 +80,13 @@ int socomm_ledger_add_entry(socomm_ledger_t *ledger,
     return SOCOMM_ALREADY_EXISTS;
   }
 
+  /** @todo make this more efficient */
+  for (size_t i = 0; i < ledger->len; ++i) {
+    if (ledger->entries[i].port == port) {
+      return SOCOMM_PORT_IN_USE;
+    }
+  }
+
   if (ledger->len == ledger->cap) {
     size_t                 new_cap     = ledger->cap * 2;
     socomm_ledger_entry_t *new_entries = (socomm_ledger_entry_t *)malloc(
