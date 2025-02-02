@@ -116,7 +116,12 @@ socomm_broadcast_handler_poll_blocking(socomm_broadcast_handler *bh,
       }
     }
 
-    message                     = socomm_deserialize_message(&recv_msg);
+    message = socomm_deserialize_message(&recv_msg);
+
+    if (message == NULL) {
+      errno = EBADMSG;
+      break;
+    }
 
     const socomm_header *header = socomm_message_header(message);
 
