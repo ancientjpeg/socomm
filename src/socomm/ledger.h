@@ -11,12 +11,12 @@
 #include "uuid/uuid.h"
 #include <stddef.h>
 
-typedef struct socomm_ledger_t socomm_ledger_t;
+typedef struct socomm_ledger_t socomm_ledger;
 
-socomm_ledger_t               *socomm_ledger_create();
-socomm_ledger_t               *socomm_ledger_create_reserve(size_t reserve);
+socomm_ledger                 *socomm_ledger_create();
+socomm_ledger                 *socomm_ledger_create_reserve(size_t reserve);
 
-void                           socomm_ledger_destroy(socomm_ledger_t **ledger);
+void                           socomm_ledger_destroy(socomm_ledger **ledger);
 
 /**
  * @brief Adds a uuid/port combination to the ledger. Will fail if `uuid` exists
@@ -30,11 +30,9 @@ void                           socomm_ledger_destroy(socomm_ledger_t **ledger);
  * - SOCOMM_PORT_IN_USE: An entry is already using this port. May indicate
  * something has gone wrong with node management.
  */
-int                            socomm_ledger_add_entry(socomm_ledger_t *ledger,
-                                                       uuid4_t          uuid,
-                                                       uint16_t         port);
+int socomm_ledger_add_entry(socomm_ledger *ledger, uuid4_t uuid, uint16_t port);
 
-bool socomm_ledger_entry_exists(socomm_ledger_t *ledger, uuid4_t uuid);
+bool socomm_ledger_entry_exists(socomm_ledger *ledger, uuid4_t uuid);
 
 /**
  * @brief Removes the entry corr
@@ -43,6 +41,6 @@ bool socomm_ledger_entry_exists(socomm_ledger_t *ledger, uuid4_t uuid);
  * @param port
  * @return 0 on successful removal, or if `uuid` does not exist in ledger.
  */
-int  socomm_ledger_remove_entry(socomm_ledger_t *ledger, uuid4_t uuid);
+int  socomm_ledger_remove_entry(socomm_ledger *ledger, uuid4_t uuid);
 
 #endif

@@ -4,13 +4,13 @@
 
 int main()
 {
-  socomm_ledger_t *ledger        = socomm_ledger_create();
+  socomm_ledger *ledger        = socomm_ledger_create();
 
-  const size_t     TEST_ARR_SIZE = 5;
-  uuid4_t          uuids[TEST_ARR_SIZE];
-  uint16_t         ports[TEST_ARR_SIZE];
+  const size_t   TEST_ARR_SIZE = 5;
+  uuid4_t        uuids[TEST_ARR_SIZE];
+  uint16_t       ports[TEST_ARR_SIZE];
 
-  uuid4_state_t    uuid_state;
+  uuid4_state_t  uuid_state;
   uuid4_seed(&uuid_state);
 
   uuid4_t dummy_uuid;

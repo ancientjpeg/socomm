@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 typedef struct socomm_conn_handler_t {
-  socomm_ledger_t *ledger;
+  socomm_ledger *ledger;
 } socomm_conn_handler_t;
 
 socomm_conn_handler_t *socomm_conn_handler_create()
