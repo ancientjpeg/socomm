@@ -5,10 +5,12 @@
  * Copyright (c) 2025. All rights reserved.
  */
 
+#include <assert.h>
+
 /**
  * @typedef socomm_error_t
  * @brief SOCOMM error codes. These values are not stable.
- *
+ * The one exception is that SOCOMM_SUCCESS will always be 0.
  */
 typedef enum socomm_error_t {
   SOCOMM_SUCCESS        = 0,
@@ -16,3 +18,5 @@ typedef enum socomm_error_t {
   SOCOMM_DOES_NOT_EXIST = -2,
   SOCOMM_PORT_IN_USE    = -3,
 } socomm_error_t;
+
+static_assert(SOCOMM_SUCCESS == 0, "SOCOMM_SUCCESS is guaranteed to be 0.");
