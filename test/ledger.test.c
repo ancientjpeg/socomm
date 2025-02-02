@@ -44,4 +44,6 @@ int main()
 
   assert(socomm_ledger_add_entry(ledger, uuids[remove_idx], ports[remove_idx])
          == SOCOMM_SUCCESS);
+
+  return 0;
 }
