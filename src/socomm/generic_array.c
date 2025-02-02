@@ -69,17 +69,21 @@ void socomm_array_reserve(socomm_array *array, size_t reserve)
   /** @todo: prove this with discrete math lol */
   assert(reserve != 0);
 
-  /* let the compiler turn this into __builtin_clz */
-  /** @todo find a smarter, more concise way to write this */
-  size_t reserve_tmp;
-  size_t mask = ((size_t)1) << (8 * sizeof(size_t) - 1);
-  size_t lz   = 0;
-  while (!(reserve_tmp & mask)) {
-    reserve_tmp <<= 1;
-    ++lz;
+  const size_t mask = ((size_t)1) << (sizeof(size_t) * 8 - 1);
+  /** @todo IMPORTANT handle these cases better */
+  assert(!(mask & reserve));
+  assert(!(mask & array->cap));
+
+  /**
+   * I know this is "faster" with __builtin_clz but the compiler is smart enough
+   * to do that.
+   */
+  size_t reserve_tmp = 1;
+  while (reserve_tmp < reserve) {
+    reserve_tmp *= 2;
   }
 
-  const size_t new_cap = array->cap == 0 ? 1 : array->cap * 2;
+  const size_t new_cap = array->cap == 0 ? reserve_tmp : array->cap * 2;
 
   array->data          = realloc(array->data, reserve * array->element_size);
   array->cap           = new_cap;
