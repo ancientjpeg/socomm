@@ -1,6 +1,7 @@
 add_library(socomm
   broadcast_handler.c
   conn_handler.c
+  generic_array.c
   header.c
   helpers.c
   ledger.c

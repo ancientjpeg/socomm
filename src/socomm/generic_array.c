@@ -6,6 +6,8 @@
  */
 
 #include "generic_array.h"
+#include <assert.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,18 +25,18 @@ socomm_array *socomm_array_create(size_t element_size)
 
 socomm_array *socomm_array_create_reserve(size_t element_size, size_t reserve)
 {
+  assert(element_size != 0);
+
   socomm_array *array = malloc(sizeof(socomm_array));
 
-  if (reserve == 0) {
-    array->data = NULL;
-  }
-  else {
-    array->data = malloc(element_size * reserve);
-  }
-
+  array->data         = NULL;
   array->element_size = element_size;
   array->len          = 0;
-  array->cap          = reserve;
+  array->cap          = 0;
+
+  socomm_array_reserve(array, reserve);
+
+  assert(array->cap >= reserve);
 
   return array;
 }
@@ -54,6 +56,36 @@ void socomm_array_destroy(socomm_array **array)
   free(a);
 
   *array = NULL;
+}
+
+void socomm_array_reserve(socomm_array *array, size_t reserve)
+{
+
+  if (array->cap >= reserve) {
+    return;
+  }
+
+  /* I think this is impossible but just in case I'm dumb */
+  /** @todo: prove this with discrete math lol */
+  assert(reserve != 0);
+
+  /* let the compiler turn this into __builtin_clz */
+  /** @todo find a smarter, more concise way to write this */
+  size_t reserve_tmp;
+  size_t mask = ((size_t)1) << (8 * sizeof(size_t) - 1);
+  size_t lz   = 0;
+  while (!(reserve_tmp & mask)) {
+    reserve_tmp <<= 1;
+    ++lz;
+  }
+
+  const size_t new_cap = array->cap == 0 ? 1 : array->cap * 2;
+
+  array->data          = realloc(array->data, reserve * array->element_size);
+  array->cap           = new_cap;
+
+  /** @todo: gracefully handle out-of-memory situations ? */
+  assert(array->data != NULL);
 }
 
 void socomm_array_insert(socomm_array *array, void *element)

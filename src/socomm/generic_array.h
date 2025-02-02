@@ -13,9 +13,13 @@
 
 typedef struct socomm_array_t socomm_array;
 
+/** Returns NULL iff element_size == 0, or malloc fails. */
 socomm_array                 *socomm_array_create(size_t element_size);
 socomm_array *socomm_array_create_reserve(size_t element_size, size_t reserve);
+
 void          socomm_array_destroy(socomm_array **array);
+
+void          socomm_array_reserve(socomm_array *array, size_t reserve);
 
 void          socomm_array_insert(socomm_array *array, void *element);
 bool          socomm_array_contains(socomm_array *array, void *element);
