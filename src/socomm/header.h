@@ -58,7 +58,7 @@ typedef struct socomm_header_t {
 
 static_assert(sizeof(socomm_header) == 40,
               "socomm_header must be a fixed size.");
-static_assert(CHAR_BIT == 8, "Nonstandard byte sizes not (yet) supported.");
+static_assert(CHAR_BIT == 8, "Nonstandard byte sizes not supported.");
 
 socomm_header
 socomm_header_init(uint16_t port, uuid4_t node_uuid, const char *group_name);
