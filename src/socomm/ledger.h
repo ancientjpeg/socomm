@@ -8,7 +8,7 @@
 #ifndef SOCOMM_LEDGER_H_
 #define SOCOMM_LEDGER_H_
 
-#include "socomm/uuid/uuid.h"
+#include "uuid/uuid.h"
 #include <stddef.h>
 
 typedef struct socomm_ledger_t socomm_ledger_t;
