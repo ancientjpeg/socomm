@@ -56,14 +56,33 @@ void  *socomm_array_push_back(socomm_array *array, void *element);
  */
 void  *socomm_array_insert_at(socomm_array *array, void *element, size_t index);
 
+/**
+ * @brief Unchecked method to retrieve a pointer to the data stored at `index`.
+ * @note Valid to use this method to retrieve a past-the-end iteration pointer
+ * by calling `socomm_array_at(array, socomm_array_length(array))`
+ *
+ * @param array
+ * @param index
+ */
+void  *socomm_array_at(socomm_array *array, size_t index);
+
 void  *socomm_array_find(socomm_array *array, void *element);
 bool   socomm_array_contains(socomm_array *array, void *element);
-void   socomm_array_remove(socomm_array *array, void *element);
+
+void   socomm_array_pop_back(socomm_array *array);
+void   socomm_array_remove(socomm_array *array, size_t index);
 
 void  *socomm_array_element_at(socomm_array *array, size_t index);
 void  *socomm_array_element_at_checked(socomm_array *array, size_t index);
 
-size_t socomm_array_count(socomm_array *array);
+/**
+ * @return Number of elements currently stored in `array`.
+ */
+size_t socomm_array_length(socomm_array *array);
+
+/**
+ * @return Number of elements that `array` currently has allocated space for.
+ */
 size_t socomm_array_capacity(socomm_array *array);
 
 #endif

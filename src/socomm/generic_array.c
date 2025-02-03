@@ -115,15 +115,15 @@ void *socomm_array_insert_at(socomm_array *array, void *element, size_t index)
     return NULL;
   }
 
-  socomm_array_reserve(array, index + 1);
+  socomm_array_reserve(array, array->len + 1);
 
-  uint8_t *end              = array->data + (array->len * array->element_size);
+  uint8_t *end              = socomm_array_at(array, array->len);
 
-  uint8_t *element_location = array->data + (index * array->element_size);
+  uint8_t *element_location = socomm_array_at(array, index);
   uint8_t *move_dst         = element_location + array->element_size;
   size_t   move_size        = end - element_location;
 
-  memmove(element_location, move_dst, move_size);
+  memmove(move_dst, element_location, move_size);
   memcpy(element_location, element, array->element_size);
 
   ++array->len;
@@ -131,37 +131,26 @@ void *socomm_array_insert_at(socomm_array *array, void *element, size_t index)
   return element_location;
 }
 
+void *socomm_array_at(socomm_array *array, size_t index)
+{
+  assert(index <= array->len);
+  return array->data + (index * array->element_size);
+}
+
 void *socomm_array_find(socomm_array *array, void *element)
 {
   const bool static_element_size
       = array->element_size < SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX;
 
-  uint8_t *search_data = NULL;
-  uint8_t  static_search_data[SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX];
-  if (static_element_size) {
-    search_data = static_search_data;
-  }
-  else {
-    search_data = malloc(array->element_size);
-  }
-
-  void *ret_val = NULL;
-
   for (size_t i = 0; i < array->len; ++i) {
     size_t data_offset = i * array->element_size;
     void  *cmp_data    = array->data + data_offset;
-    if (memcmp(search_data, cmp_data, array->element_size) == 0) {
-      ret_val = cmp_data;
-      goto cleanup;
+    if (memcmp(element, cmp_data, array->element_size) == 0) {
+      return cmp_data;
     }
   }
 
-cleanup:
-  if (!static_element_size) {
-    free(search_data);
-  }
-
-  return ret_val;
+  return NULL;
 }
 
 bool socomm_array_contains(socomm_array *array, void *element)
@@ -169,13 +158,21 @@ bool socomm_array_contains(socomm_array *array, void *element)
   return socomm_array_find(array, element) != NULL;
 }
 
-void socomm_array_remove(socomm_array *array, void *element)
+void socomm_array_pop_back(socomm_array *array)
 {
-  if (socomm_array_count(array) == 0) {
+  if (socomm_array_length(array) == 0) {
     return;
   }
 
-  uint8_t *target_element = (uint8_t *)socomm_array_find(array, element);
+  socomm_array_remove(array, array->len - 1);
+}
+void socomm_array_remove(socomm_array *array, size_t index)
+{
+  if (socomm_array_length(array) == 0) {
+    return;
+  }
+
+  uint8_t *target_element = (uint8_t *)socomm_array_at(array, index);
   if (target_element == NULL) {
     return;
   }
@@ -190,6 +187,8 @@ void socomm_array_remove(socomm_array *array, void *element)
   }
 
   memmove(target_element, target_replacement, data_move_size);
+
+  --array->len;
 }
 
 void *socomm_array_element_at(socomm_array *array, size_t index)
@@ -207,7 +206,7 @@ void *socomm_array_element_at_checked(socomm_array *array, size_t index)
   return socomm_array_element_at(array, index);
 }
 
-size_t socomm_array_count(socomm_array *array)
+size_t socomm_array_length(socomm_array *array)
 {
   return array->len;
 }
