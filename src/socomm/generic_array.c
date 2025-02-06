@@ -16,11 +16,12 @@
 #endif
 
 typedef struct socomm_array_t {
-  void                             *data;
-  size_t                            element_size;
-  size_t                            len;
-  size_t                            cap;
-  socomm_array_element_destructor_t dtor;
+  void               *data;
+  size_t              element_size;
+  size_t              len;
+  size_t              cap;
+  socomm_array_dtor_t dtor;
+  socomm_array_comp_t comp;
 } socomm_array;
 
 socomm_array *socomm_array_create(size_t element_size)
@@ -39,6 +40,7 @@ socomm_array *socomm_array_create_reserve(size_t element_size, size_t reserve)
   array->len          = 0;
   array->cap          = 0;
   array->dtor         = NULL;
+  array->comp         = memcmp;
 
   socomm_array_reserve(array, reserve);
 
@@ -64,10 +66,14 @@ void socomm_array_destroy(socomm_array **array)
   *array = NULL;
 }
 
-void socomm_array_set_element_destructor(socomm_array *array,
-                                         socomm_array_element_destructor_t dtor)
+void socomm_array_set_dtor(socomm_array *array, socomm_array_dtor_t dtor)
 {
   array->dtor = dtor;
+}
+
+void socomm_array_set_comp(socomm_array *array, socomm_array_comp_t comp)
+{
+  array->comp = comp;
 }
 
 void socomm_array_reserve(socomm_array *array, size_t reserve)
@@ -145,7 +151,7 @@ void *socomm_array_find(socomm_array *array, void *element)
   for (size_t i = 0; i < array->len; ++i) {
     size_t data_offset = i * array->element_size;
     void  *cmp_data    = array->data + data_offset;
-    if (memcmp(element, cmp_data, array->element_size) == 0) {
+    if (array->comp(element, cmp_data, array->element_size) == 0) {
       return cmp_data;
     }
   }

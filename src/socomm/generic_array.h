@@ -12,8 +12,11 @@
 #include <stddef.h>
 
 typedef struct socomm_array_t socomm_array;
-typedef void (*socomm_array_element_destructor_t)(void  *element,
-                                                  size_t element_size);
+typedef void (*socomm_array_dtor_t)(void *element, size_t element_size);
+
+typedef int (*socomm_array_comp_t)(const void *a,
+                                   const void *b,
+                                   size_t      element_size);
 
 /** Returns NULL iff element_size == 0, or malloc fails. */
 socomm_array *socomm_array_create(size_t element_size);
@@ -21,9 +24,8 @@ socomm_array *socomm_array_create_reserve(size_t element_size, size_t reserve);
 
 void          socomm_array_destroy(socomm_array **array);
 
-void          socomm_array_set_element_destructor(
-             socomm_array                     *array,
-             socomm_array_element_destructor_t dtor);
+void   socomm_array_set_dtor(socomm_array *array, socomm_array_dtor_t dtor);
+void   socomm_array_set_comp(socomm_array *array, socomm_array_comp_t comp);
 
 void   socomm_array_reserve(socomm_array *array, size_t reserve);
 
