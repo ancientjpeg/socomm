@@ -197,6 +197,51 @@ void socomm_array_remove(socomm_array *array, size_t index)
   --array->len;
 }
 
+void socomm_array_element_swap(void *a, void *b, size_t size)
+{
+
+  if (size <= SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX) {
+    uint8_t temp[SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX];
+    memcpy(temp, a, size);
+    memcpy(a, b, size);
+    memcpy(b, temp, size);
+  }
+  else {
+    /* @todo Profile this - performance probably sucks but its an edge case */
+    while (size--) {
+      uint8_t *a_byte = (uint8_t *)a++;
+      uint8_t *b_byte = (uint8_t *)b++;
+      uint8_t  tmp;
+
+      tmp     = *a_byte;
+      *a_byte = *b_byte;
+      *b_byte = tmp;
+    }
+  }
+}
+
+void socomm_array_purge(socomm_array *array, void *element)
+{
+
+  void *entry;
+
+  /**
+   * yes, jackson, I know this can overflow, but if it does the
+   * loop won't run. Calm down.
+   * - jackson
+   */
+  void *swap_target
+      = (uint8_t *)(array->data) + array->len * array->element_size;
+
+  for (size_t i = 0; i < array->len; ++i) {
+    void *current_element
+        = (void *)((uint8_t *)array->data + (i * array->element_size));
+    if (array->comp(current_element, element, array->element_size) == 0) {
+    }
+    swap_target -= array->element_size;
+  }
+}
+
 void *socomm_array_element_at(socomm_array *array, size_t index)
 {
   size_t data_offset = index * array->element_size;

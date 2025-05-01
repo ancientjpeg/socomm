@@ -74,6 +74,15 @@ bool   socomm_array_contains(socomm_array *array, void *element);
 void   socomm_array_pop_back(socomm_array *array);
 void   socomm_array_remove(socomm_array *array, size_t index);
 
+/**
+ * @brief Remove all elements where the result of the `socomm_array_comparator`
+ * check against `element` is 0.
+ *
+ * @param array
+ * @param element
+ */
+void   socomm_array_purge(socomm_array *array, void *element);
+
 void  *socomm_array_element_at(socomm_array *array, size_t index);
 void  *socomm_array_element_at_checked(socomm_array *array, size_t index);
 
