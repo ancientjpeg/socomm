@@ -32,7 +32,7 @@ int socomm_ledger_port_comp(const void *a, const void *b, size_t size)
   socomm_ledger_entry *entry_a = (socomm_ledger_entry *)a;
   socomm_ledger_entry *entry_b = (socomm_ledger_entry *)b;
 
-  return entry_a->port == entry_b->port;
+  return entry_a->port != entry_b->port;
 }
 
 static_assert(sizeof(socomm_ledger_entry) == 24,

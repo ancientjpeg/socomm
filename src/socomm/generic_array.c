@@ -96,15 +96,13 @@ void socomm_array_reserve(socomm_array *array, size_t reserve)
    * I know this is "faster" with __builtin_clz but the compiler is smart enough
    * to do that.
    */
-  size_t reserve_tmp = 1;
-  while (reserve_tmp < reserve) {
-    reserve_tmp *= 2;
+  size_t new_cap = 1;
+  while (new_cap < reserve) {
+    new_cap *= 2;
   }
 
-  const size_t new_cap = array->cap == 0 ? reserve_tmp : array->cap * 2;
-
-  array->data          = realloc(array->data, reserve * array->element_size);
-  array->cap           = new_cap;
+  array->data = realloc(array->data, reserve * array->element_size);
+  array->cap  = new_cap;
 
   /** @todo: gracefully handle out-of-memory situations ? */
   assert(array->data != NULL);
@@ -238,6 +236,19 @@ size_t
 socomm_array_purge(socomm_array *array, void *element, socomm_array_comp_t comp)
 {
 
+  uint8_t    element_buff_Static[SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX];
+  uint8_t   *element_buff = element_buff_Static;
+
+  const bool use_dynamic_element_buff
+      = array->element_size > SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX;
+
+  /** @todo maybe refactor this into a check */
+  if (use_dynamic_element_buff) {
+    element_buff = malloc(array->element_size);
+  }
+
+  memcpy(element_buff, element, array->element_size);
+
   socomm_verify_comparator(&comp);
 
   /**
@@ -253,20 +264,26 @@ socomm_array_purge(socomm_array *array, void *element, socomm_array_comp_t comp)
 
     void *current_element = socomm_array_at(array, i);
 
-    if (comp(current_element, element, array->element_size) == 0) {
-      socomm_array_element_swap(current_element, element, array->element_size);
+    if (comp(current_element, element_buff, array->element_size) == 0) {
+      socomm_array_element_swap(current_element,
+                                swap_target,
+                                array->element_size);
       socomm_array_pop_back(array);
       ++removed;
 
       /**
-       * @todo I'm not 100% confident this won't underflow. My gut says it
-       * won't, but write out a proof to be sure.
+       * @todo I'm not 100% confident in this. My gut says it won't, but
+       * write out a proof to be sure.
        */
       swap_target -= array->element_size;
       continue;
     }
 
     ++i;
+  }
+
+  if (use_dynamic_element_buff) {
+    free(element_buff);
   }
 
   return removed;
