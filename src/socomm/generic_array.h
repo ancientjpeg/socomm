@@ -11,6 +11,14 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+/**
+ * @brief `socomm_array` is a general-purpose linear array, similar to
+ * C++'s std::vector. It handles basic buffer allocation as well as
+ * provides functionality for search, insertion, and removal. None of these
+ * methods are guaranteed thread-safe; all method calls must be protected
+ * by synchronization mechanisms in multi-threaded contexts.
+ *
+ */
 typedef struct socomm_array_t socomm_array;
 typedef void (*socomm_array_dtor_t)(void *element, size_t element_size);
 
