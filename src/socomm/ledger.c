@@ -55,7 +55,6 @@ socomm_ledger *socomm_ledger_create_reserve(size_t reserve)
 
   ledger->entries
       = socomm_array_create_reserve(sizeof(socomm_ledger_entry), reserve);
-  socomm_array_set_comp(ledger->entries, socomm_ledger_comp);
 
   return ledger;
 }
@@ -67,31 +66,22 @@ void socomm_ledger_destroy(socomm_ledger **ledger)
   *ledger = NULL;
 }
 
-/** Returns entry iff entry exists, else NULL */
-socomm_ledger_entry *socomm_ledger_get_entry(socomm_ledger *ledger,
-                                             uuid4_t        uuid)
-{
-  socomm_ledger_entry dummy_entry;
-  dummy_entry.uuid = uuid;
-  return socomm_array_find(ledger->entries, &dummy_entry);
-}
-
 /** @todo convert to O(1)/O(logN) structure */
 int socomm_ledger_add_entry(socomm_ledger *ledger, uuid4_t uuid, uint16_t port)
 {
-  if (socomm_ledger_get_entry(ledger, uuid) != NULL) {
+
+  socomm_ledger_entry dummy_entry;
+  dummy_entry.uuid = uuid;
+  dummy_entry.port = port;
+
+  if (socomm_array_find(ledger->entries, &dummy_entry, socomm_ledger_comp)
+      != NULL) {
     return SOCOMM_ALREADY_EXISTS;
   }
 
-  /** @todo make this more efficient */
-  for (size_t i = 0; i < socomm_array_length(ledger->entries); ++i) {
-    socomm_ledger_entry *entry = socomm_array_at(ledger->entries, i);
-    if (memcmp(&entry->uuid, &uuid, sizeof(uuid4_t))) {
-      return SOCOMM_ALREADY_EXISTS;
-    }
-    if (entry->port == port) {
-      return SOCOMM_PORT_IN_USE;
-    }
+  if (socomm_array_find(ledger->entries, &dummy_entry, socomm_ledger_port_comp)
+      != NULL) {
+    return SOCOMM_PORT_IN_USE;
   }
 
   socomm_ledger_entry new_entry = {uuid, port};
@@ -102,31 +92,18 @@ int socomm_ledger_add_entry(socomm_ledger *ledger, uuid4_t uuid, uint16_t port)
 
 bool socomm_ledger_entry_exists(socomm_ledger *ledger, uuid4_t uuid)
 {
-  return socomm_ledger_get_entry(ledger, uuid) != NULL;
+  socomm_ledger_entry dummy_entry;
+  dummy_entry.uuid = uuid;
+  return socomm_array_find(ledger->entries, &dummy_entry, socomm_ledger_comp)
+         != NULL;
 }
 
 int socomm_ledger_remove_entry(socomm_ledger *ledger, uuid4_t uuid)
 {
-  socomm_ledger_entry *entry = socomm_ledger_get_entry(ledger, uuid);
+  socomm_ledger_entry dummy_entry;
+  dummy_entry.uuid = uuid;
+  size_t removed
+      = socomm_array_purge(ledger->entries, &dummy_entry, socomm_ledger_comp);
 
-  // socomm_array_remove_if
-
-  //     if (entry == NULL)
-  // {
-  //   return SOCOMM_DOES_NOT_EXIST;
-  // }
-
-  // socomm_ledger_entry *end  = ledger->entries + ledger->len;
-
-  // socomm_ledger_entry *next = entry;
-  // for (; ++next != end;) {
-  //   socomm_ledger_entry temp = *entry;
-  //   *entry                   = *next;
-  //   *next                    = temp;
-  //   entry                    = next;
-  // }
-
-  // --ledger->len;
-
-  return SOCOMM_SUCCESS;
+  return removed ? SOCOMM_SUCCESS : SOCOMM_DOES_NOT_EXIST;
 }

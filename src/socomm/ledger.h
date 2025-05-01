@@ -35,11 +35,12 @@ int socomm_ledger_add_entry(socomm_ledger *ledger, uuid4_t uuid, uint16_t port);
 bool socomm_ledger_entry_exists(socomm_ledger *ledger, uuid4_t uuid);
 
 /**
- * @brief Removes the entry corr
+ * @brief Removes the entry corresponding to `uuid`
  *
  * @param uuid
  * @param port
- * @return 0 on successful removal, or if `uuid` does not exist in ledger.
+ * @return 0 on successful removal, or `SOCOMM_DOES_NOT_EXIST` if `uuid` does
+ * not exist in ledger.
  */
 int  socomm_ledger_remove_entry(socomm_ledger *ledger, uuid4_t uuid);
 
