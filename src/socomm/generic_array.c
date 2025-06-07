@@ -83,25 +83,31 @@ void socomm_array_reserve(socomm_array *array, size_t reserve)
     return;
   }
 
+  const size_t z_bits = sizeof(size_t) * 8;
+
   /* I think this is impossible but just in case I'm dumb */
   /** @todo: prove this with discrete math lol */
   assert(reserve != 0);
 
-  const size_t mask = ((size_t)1) << (sizeof(size_t) * 8 - 1);
-  /** @todo IMPORTANT handle these cases better */
-  assert(!(mask & reserve));
-  assert(!(mask & array->cap));
-
   /**
-   * I know this is "faster" with __builtin_clz but the compiler is smart enough
-   * to do that.
+   * no point in manually using __builtin_clz when the compiler is always
+   *  smart enough to figure it out anyways.
    */
-  size_t new_cap = 1;
-  while (new_cap < reserve) {
-    new_cap *= 2;
+  size_t reserve_clz = 0;
+  for (size_t clz_mask = (1UL << (z_bits - 1)); !(reserve & clz_mask);
+       clz_mask >>= 1) {
+    reserve_clz++;
   }
 
-  array->data = realloc(array->data, reserve * array->element_size);
+  size_t new_cap;
+  if (reserve_clz == 0) {
+    new_cap = reserve;
+  }
+  else {
+    new_cap = 1 << (z_bits - reserve_clz);
+  }
+
+  array->data = realloc(array->data, new_cap);
   array->cap  = new_cap;
 
   /** @todo: gracefully handle out-of-memory situations ? */

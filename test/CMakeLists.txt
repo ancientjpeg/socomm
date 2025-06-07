@@ -12,6 +12,9 @@ foreach(test_file ${TEST_FILES})
       ${TEST_HELPERS}
     )
 
+    target_compile_options(${test_target_name} PRIVATE -fsanitize=address)
+    target_link_options(${test_target_name} PRIVATE -fsanitize=address)
+
     target_link_libraries(
       ${test_target_name} socomm  
     )
