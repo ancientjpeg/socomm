@@ -79,11 +79,13 @@ void socomm_array_set_dtor(socomm_array *array, socomm_array_dtor_t dtor)
 
 void socomm_array_reserve(socomm_array *array, size_t reserve)
 {
+
   if (array->cap >= reserve) {
     return;
   }
 
-  const size_t z_bits = sizeof(size_t) * 8;
+  const size_t reserve_bytes = reserve * array->element_size;
+  const size_t z_bits        = sizeof(size_t) * 8;
 
   /* I think this is impossible but just in case I'm dumb */
   /** @todo: prove this with discrete math lol */
@@ -91,24 +93,24 @@ void socomm_array_reserve(socomm_array *array, size_t reserve)
 
   /**
    * no point in manually using __builtin_clz when the compiler is always
-   *  smart enough to figure it out anyways.
+   * smart enough to figure it out anyways.
    */
   size_t reserve_clz = 0;
-  for (size_t clz_mask = (1UL << (z_bits - 1)); !(reserve & clz_mask);
+  for (size_t clz_mask = (1UL << (z_bits - 1)); !(reserve_bytes & clz_mask);
        clz_mask >>= 1) {
     reserve_clz++;
   }
 
-  size_t new_cap;
+  size_t new_cap_bytes;
   if (reserve_clz == 0) {
-    new_cap = reserve;
+    new_cap_bytes = reserve;
   }
   else {
-    new_cap = 1 << (z_bits - reserve_clz);
+    new_cap_bytes = 1 << (z_bits - reserve_clz);
   }
 
-  array->data = realloc(array->data, new_cap);
-  array->cap  = new_cap;
+  array->data = realloc(array->data, new_cap_bytes);
+  array->cap  = new_cap_bytes / array->element_size;
 
   /** @todo: gracefully handle out-of-memory situations ? */
   assert(array->data != NULL);

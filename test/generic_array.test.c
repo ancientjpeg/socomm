@@ -166,7 +166,7 @@ void test_custom_comp()
   socomm_array_push_back(data_arr, &dummy_el_1);
 
   assert(socomm_array_length(data_arr) == ARRAY_SIZE + 1);
-  socomm_array_purge(data_arr, el_1, custom_data_comparator);
+  socomm_array_purge(data_arr, &el_1_backup, custom_data_comparator);
   assert(socomm_array_length(data_arr) == ARRAY_SIZE - 1);
 
   socomm_array_insert_at(data_arr, &el_1_backup, 1);
