@@ -26,14 +26,26 @@ typedef int (*socomm_array_comp_t)(const void *a,
                                    const void *b,
                                    size_t      element_size);
 
-/** Returns NULL iff element_size == 0, or malloc fails. */
+/**
+ * @brief Creates an array to contain elements of `element_size`.
+ * @details Returns NULL iff element_size == 0, or malloc fails. Note that
+ * `element_size` does not just control the initial allocation, but also
+ * dictates the internal functioning of the array.
+ */
 socomm_array *socomm_array_create(size_t element_size);
 socomm_array *socomm_array_create_reserve(size_t element_size, size_t reserve);
 
 void          socomm_array_destroy(socomm_array **array);
 
+/**
+ * @brief Set a destructor for elements of this array. Useful when holding an
+ * array of allocated objects.
+ */
 void   socomm_array_set_dtor(socomm_array *array, socomm_array_dtor_t dtor);
 
+/**
+ * @brief Reserve memory for at least `reserve` elements.
+ */
 void   socomm_array_reserve(socomm_array *array, size_t reserve);
 
 /**
@@ -109,6 +121,16 @@ bool   socomm_array_contains(socomm_array       *array,
  * was already empty or the removal fails for some other reason.
  */
 bool   socomm_array_pop_back(socomm_array *array);
+
+/**
+ * @brief Quickly clears the array and sets size to 0. Will not perform
+ * reallocation or clear the data buffer.
+ *
+ * If you'd like to deallocate memory but keep the array alive,
+ * use `socomm_array_destroy` immediately followed by
+ * `socomm_array_create`
+ */
+void   socomm_array_clear(socomm_array *array);
 
 /**
  * @brief Removes the element at `index`. Maintains stable ordering of

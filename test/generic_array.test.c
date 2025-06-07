@@ -3,10 +3,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define DATA_COUNT 10
+
 void test_create_reserve()
 {
-  const int     ARRAY_SIZE = 3;
-  socomm_array *int_arr = socomm_array_create_reserve(sizeof(int), ARRAY_SIZE);
+  socomm_array *int_arr = socomm_array_create(sizeof(int));
+  assert(socomm_array_length(int_arr) == 0);
+  assert(socomm_array_capacity(int_arr) == 0);
+
+  socomm_array_destroy(&int_arr);
+  assert(int_arr == NULL);
+
+  const int ARRAY_SIZE = 3;
+  int_arr              = socomm_array_create_reserve(sizeof(int), ARRAY_SIZE);
   assert(int_arr != NULL);
   assert(socomm_array_length(int_arr) == 0);
   assert(socomm_array_capacity(int_arr) >= 3);
@@ -17,12 +26,9 @@ void test_create_reserve()
 
 void test_insertion_and_removal()
 {
-
   socomm_array *int_arr = socomm_array_create(sizeof(int));
-  assert(socomm_array_length(int_arr) == 0);
-  assert(socomm_array_capacity(int_arr) == 0);
 
-  int el = 0;
+  int           el      = 0;
   socomm_array_push_back(int_arr, &el);
   assert(*(int *)socomm_array_at(int_arr, 0) == 0);
 
@@ -48,9 +54,22 @@ void test_insertion_and_removal()
   socomm_array_remove(int_arr, 0);
   assert(socomm_array_length(int_arr) == 0);
 
-  socomm_array_reserve(int_arr, 50);
+  socomm_array_reserve(int_arr, DATA_COUNT);
   assert(socomm_array_length(int_arr) == 0);
-  assert(socomm_array_capacity(int_arr) >= 50);
+  assert(socomm_array_capacity(int_arr) >= DATA_COUNT);
+
+  for (size_t i = 0; i < DATA_COUNT; ++i) {
+    int val = (int)i;
+    socomm_array_push_back(int_arr, &val);
+  }
+
+  assert(socomm_array_length(int_arr) == DATA_COUNT);
+  assert(socomm_array_capacity(int_arr) >= DATA_COUNT);
+
+  socomm_array_clear(int_arr);
+
+  assert(socomm_array_length(int_arr) == 0);
+  assert(socomm_array_capacity(int_arr) >= DATA_COUNT);
 
   socomm_array_destroy(&int_arr);
 }
@@ -68,23 +87,27 @@ void test_getters_and_search()
   assert(socomm_array_capacity(int_arr) >= reserve_amt);
   assert(socomm_array_length(int_arr) == 0);
 
-#define data_count 3
-  assert(data_count <= reserve_amt);
+  assert(DATA_COUNT <= reserve_amt);
 
-  int data[data_count] = {15, 18, 5085};
-  for (size_t i = 0; i < data_count; ++i) {
+  int data[DATA_COUNT];
+  for (size_t i = 0; i < DATA_COUNT; ++i) {
+    data[i] = rand();
+  }
+
+  for (size_t i = 0; i < DATA_COUNT; ++i) {
     socomm_array_push_back(int_arr, &data[i]);
     assert(socomm_array_length(int_arr) == i + 1);
     assert(*(int *)socomm_array_at(int_arr, i) == data[i]);
 
     assert(socomm_array_contains(int_arr, &data[i], NULL));
     assert(socomm_array_find(int_arr, &data[i], NULL) != NULL);
-    assert(socomm_array_find(int_arr, &data[i], NULL)
-           == ((uint8_t *)socomm_array_at(int_arr, 0) + (i * sizeof(int))));
+    uint8_t *const anticipated_pos
+        = ((uint8_t *)socomm_array_at(int_arr, 0) + (i * sizeof(int)));
+    assert(socomm_array_find(int_arr, &data[i], NULL) == anticipated_pos);
   }
 
-  assert(socomm_array_length(int_arr) == data_count);
-  assert(socomm_array_capacity(int_arr) >= data_count);
+  assert(socomm_array_length(int_arr) == DATA_COUNT);
+  assert(socomm_array_capacity(int_arr) >= DATA_COUNT);
 
   socomm_array_destroy(&int_arr);
 }
@@ -162,12 +185,40 @@ void test_custom_comp()
          == socomm_array_length(data_arr));
 }
 
+static int dtor_call_count;
+
+void       test_dtor(void *element, size_t element_size)
+{
+  ++dtor_call_count;
+}
+
+void test_dtors()
+{
+  static_assert(DATA_COUNT > 3, "Need data count over 3 for proper testing");
+  dtor_call_count   = 0;
+  socomm_array *arr = socomm_array_create_reserve(sizeof(int), DATA_COUNT);
+  for (int i = 0; i < DATA_COUNT; ++i) {
+    socomm_array_push_back(arr, &i);
+  }
+
+  socomm_array_set_dtor(arr, &test_dtor);
+
+  socomm_array_pop_back(arr);
+  assert(dtor_call_count == 1);
+  socomm_array_remove(arr, 0);
+  assert(dtor_call_count == 2);
+
+  socomm_array_clear(arr);
+  assert(dtor_call_count == DATA_COUNT);
+}
+
 int main()
 {
   test_create_reserve();
   test_insertion_and_removal();
   test_getters_and_search();
   test_custom_comp();
+  test_dtors();
 
   return 0;
 }

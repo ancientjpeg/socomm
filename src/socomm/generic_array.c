@@ -127,6 +127,10 @@ void *socomm_array_insert_at(socomm_array *array, void *element, size_t index)
   uint8_t *move_dst         = element_location + array->element_size;
   size_t   move_size        = end - element_location;
 
+  /**
+   * This does permit aliased insertion, i.e. `element` may be equal to
+   * `element_location`.
+   */
   memmove(move_dst, element_location, move_size);
   memcpy(element_location, element, array->element_size);
 
@@ -155,9 +159,6 @@ socomm_array_find(socomm_array *array, void *element, socomm_array_comp_t comp)
 
   socomm_verify_comparator(&comp);
 
-  const bool static_element_size
-      = array->element_size < SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX;
-
   for (size_t i = 0; i < array->len; ++i) {
     size_t data_offset = i * array->element_size;
     void  *cmp_data    = array->data + data_offset;
@@ -183,6 +184,17 @@ bool socomm_array_pop_back(socomm_array *array)
   }
 
   return socomm_array_remove(array, array->len - 1);
+}
+
+void socomm_array_clear(socomm_array *array)
+{
+  if (array->dtor != NULL) {
+    for (size_t i = 0; i < array->len; ++i) {
+      void *data = socomm_array_at(array, i);
+      array->dtor(data, array->element_size);
+    }
+  }
+  array->len = 0;
 }
 
 bool socomm_array_remove(socomm_array *array, size_t index)
@@ -236,8 +248,8 @@ size_t
 socomm_array_purge(socomm_array *array, void *element, socomm_array_comp_t comp)
 {
 
-  uint8_t    element_buff_Static[SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX];
-  uint8_t   *element_buff = element_buff_Static;
+  uint8_t    element_buff_static[SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX];
+  uint8_t   *element_buff = element_buff_static;
 
   const bool use_dynamic_element_buff
       = array->element_size > SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX;
