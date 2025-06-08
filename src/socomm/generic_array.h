@@ -11,6 +11,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#ifndef SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX
+#define SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX 16
+#endif
+
 /**
  * @brief `socomm_array` is a general-purpose linear array, similar to
  * C++'s std::vector. It handles basic buffer allocation as well as

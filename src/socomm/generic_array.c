@@ -11,10 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX
-#define SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX 16
-#endif
-
 static void socomm_verify_comparator(socomm_array_comp_t *comp)
 {
   if (*comp == NULL) {

@@ -139,6 +139,10 @@ int custom_data_comparator(const void *a, const void *b, size_t sz)
 
 void test_custom_comp()
 {
+  static_assert(sizeof(custom_data) >= SOCOMM_ARRAY_ELEMENT_STATIC_SIZE_MAX,
+                "Custom data must exceed static size to test array allocation "
+                "capabilities");
+
   const int     ARRAY_SIZE = 3;
   socomm_array *data_arr
       = socomm_array_create_reserve(sizeof(custom_data), ARRAY_SIZE);
