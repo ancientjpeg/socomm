@@ -78,57 +78,12 @@ void  *socomm_array_push_back(socomm_array *array, void *element);
 void  *socomm_array_insert_at(socomm_array *array, void *element, size_t index);
 
 /**
- * @brief Unchecked method to retrieve a pointer to the data stored at `index`.
- * @note Valid to use this method to retrieve a past-the-end iteration pointer
- * by calling `socomm_array_at(array, socomm_array_length(array))`
- *
- * @param array
- * @param index
- * @return The pointer to element `index` of `array`.
- */
-void  *socomm_array_at(socomm_array *array, size_t index);
-
-/**
- * @brief Returns the index of `element` in `array` if it is found using
- * `comp` as a comparator. If the element is not found, returns
- * `socomm_array_length(array)`.
- */
-size_t socomm_array_index_of(socomm_array       *array,
-                             void               *element,
-                             socomm_array_comp_t comp);
-
-/**
- * @brief Finds the first element in `array` that matches `element` and returns
- * it.
- *
- * @param array
- * @param element The element to find.
- * @param comp The comparator function. If `NULL`, `memcmp` is used.
- * @return The found element, or NULL if no matching element was found.
- */
-void *
-socomm_array_find(socomm_array *array, void *element, socomm_array_comp_t comp);
-
-/**
- * @brief `true` if `array` contains `element` when compared using `comp`.
- */
-bool   socomm_array_contains(socomm_array       *array,
-                             void               *element,
-                             socomm_array_comp_t comp);
-
-/**
- * @brief Removes the last element of `array`. Returns `false` if array
- * was already empty or the removal fails for some other reason.
- */
-bool   socomm_array_pop_back(socomm_array *array);
-
-/**
  * @brief Quickly clears the array and sets size to 0. Will not perform
  * reallocation or clear the data buffer.
  *
  * If you'd like to deallocate memory but keep the array alive,
  * use `socomm_array_destroy` immediately followed by
- * `socomm_array_create`
+ * `socomm_array_create`.
  */
 void   socomm_array_clear(socomm_array *array);
 
@@ -137,6 +92,12 @@ void   socomm_array_clear(socomm_array *array);
  * other array elements. Returns `false` if `index` is out-of-bounds.
  */
 bool   socomm_array_remove(socomm_array *array, size_t index);
+
+/**
+ * @brief Removes the last element of `array`. Returns `false` if array
+ * was already empty or the removal fails for some other reason.
+ */
+bool   socomm_array_pop_back(socomm_array *array);
 
 /**
  * @brief Remove all elements equal to `element`. Is not stable; not
@@ -152,17 +113,57 @@ size_t socomm_array_purge(socomm_array       *array,
                           void               *element,
                           socomm_array_comp_t comp);
 
-void  *socomm_array_element_at(socomm_array *array, size_t index);
-void  *socomm_array_element_at_checked(socomm_array *array, size_t index);
+/**
+ * @brief Unchecked method to retrieve a pointer to the data stored at `index`.
+ * @note Valid to use this method to retrieve a past-the-end iteration pointer
+ * by calling `socomm_array_at(array, socomm_array_length(array))`
+ *
+ * @param array
+ * @param index
+ * @return The pointer to element `index` of `array`. This pointer should
+ * be treated as an iterator, and may be invalidated by any non-const
+ * array methods, i.e. those that modify size/capacity/ordering.
+ */
+void  *socomm_array_at(socomm_array *array, size_t index);
+const void *socomm_array_at_const(socomm_array *array, size_t index);
+
+/**
+ * @brief Returns the index of `element` in `array` if it is found using
+ * `comp` as a comparator. If the element is not found, returns
+ * `socomm_array_length(array)`.
+ */
+size_t      socomm_array_index_of(const socomm_array *array,
+                                  void               *element,
+                                  socomm_array_comp_t comp);
+
+/**
+ * @brief Finds the first element in `array` that matches `element` and returns
+ * it.
+ *
+ * @param array
+ * @param element The element to find.
+ * @param comp The comparator function. If `NULL`, `memcmp` is used.
+ * @return The found element, or NULL if no matching element was found.
+ */
+void       *socomm_array_find(const socomm_array *array,
+                              void               *element,
+                              socomm_array_comp_t comp);
+
+/**
+ * @brief `true` if `array` contains `element` when compared using `comp`.
+ */
+bool        socomm_array_contains(socomm_array       *array,
+                                  void               *element,
+                                  socomm_array_comp_t comp);
 
 /**
  * @return Number of elements currently stored in `array`.
  */
-size_t socomm_array_length(socomm_array *array);
+size_t      socomm_array_length(const socomm_array *array);
 
 /**
  * @return Number of elements that `array` currently has allocated space for.
  */
-size_t socomm_array_capacity(socomm_array *array);
+size_t      socomm_array_capacity(const socomm_array *array);
 
 #endif

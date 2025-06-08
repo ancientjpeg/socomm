@@ -147,44 +147,6 @@ void *socomm_array_insert_at(socomm_array *array, void *element, size_t index)
   return element_location;
 }
 
-void *socomm_array_at(socomm_array *array, size_t index)
-{
-  return array->data + (index * array->element_size);
-}
-
-size_t socomm_array_index_of(socomm_array       *array,
-                             void               *element,
-                             socomm_array_comp_t comp)
-{
-  void *found = socomm_array_find(array, element, comp);
-  return found == NULL ? socomm_array_length(array)
-                       : (found - array->data) / array->element_size;
-}
-
-void *
-socomm_array_find(socomm_array *array, void *element, socomm_array_comp_t comp)
-{
-
-  socomm_verify_comparator(&comp);
-
-  for (size_t i = 0; i < array->len; ++i) {
-    size_t data_offset = i * array->element_size;
-    void  *cmp_data    = array->data + data_offset;
-    if (comp(element, cmp_data, array->element_size) == 0) {
-      return cmp_data;
-    }
-  }
-
-  return NULL;
-}
-
-bool socomm_array_contains(socomm_array       *array,
-                           void               *element,
-                           socomm_array_comp_t comp)
-{
-  return socomm_array_find(array, element, comp) != NULL;
-}
-
 bool socomm_array_pop_back(socomm_array *array)
 {
   if (socomm_array_length(array) == 0) {
@@ -309,27 +271,56 @@ socomm_array_purge(socomm_array *array, void *element, socomm_array_comp_t comp)
   return removed;
 }
 
-void *socomm_array_element_at(socomm_array *array, size_t index)
+void *socomm_array_at(socomm_array *array, size_t index)
 {
-  size_t data_offset = index * array->element_size;
-  return array->data + data_offset;
+  return array->data + (index * array->element_size);
 }
 
-void *socomm_array_element_at_checked(socomm_array *array, size_t index)
+const void *socomm_array_at_const(socomm_array *array, size_t index)
 {
-  if (index >= array->len) {
-    return NULL;
+  return socomm_array_at(array, index);
+}
+
+size_t socomm_array_index_of(const socomm_array *array,
+                             void               *element,
+                             socomm_array_comp_t comp)
+{
+  void *found = socomm_array_find(array, element, comp);
+  return found == NULL ? socomm_array_length(array)
+                       : (found - array->data) / array->element_size;
+}
+
+void *socomm_array_find(const socomm_array *array,
+                        void               *element,
+                        socomm_array_comp_t comp)
+{
+
+  socomm_verify_comparator(&comp);
+
+  for (size_t i = 0; i < array->len; ++i) {
+    size_t data_offset = i * array->element_size;
+    void  *cmp_data    = array->data + data_offset;
+    if (comp(element, cmp_data, array->element_size) == 0) {
+      return cmp_data;
+    }
   }
 
-  return socomm_array_element_at(array, index);
+  return NULL;
 }
 
-size_t socomm_array_length(socomm_array *array)
+bool socomm_array_contains(socomm_array       *array,
+                           void               *element,
+                           socomm_array_comp_t comp)
+{
+  return socomm_array_find(array, element, comp) != NULL;
+}
+
+size_t socomm_array_length(const socomm_array *array)
 {
   return array->len;
 }
 
-size_t socomm_array_capacity(socomm_array *array)
+size_t socomm_array_capacity(const socomm_array *array)
 {
   return array->cap;
 }
