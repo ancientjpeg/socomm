@@ -12,6 +12,14 @@ foreach(test_file ${TEST_FILES})
       ${TEST_HELPERS}
     )
 
+    if (${SOCOMM_SANITIZE})
+        target_compile_options(${test_target_name} PRIVATE -fsanitize=address)
+        target_link_options(${test_target_name} PRIVATE -fsanitize=address)
+        message("Enabling Test Address Sanitizer")
+    else()
+        message("Disabling Test Address Sanitizer")
+    endif()
+
     target_link_libraries(
       ${test_target_name} socomm  
     )
